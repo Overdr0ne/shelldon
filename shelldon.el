@@ -8,8 +8,6 @@
   (shell-command command output-buffer error-buffer)
   (with-current-buffer output-buffer (buffer-string)))
 
-(add-to-list 'ivy-sort-functions-alist '(shelldon-hist- . string<))
-
 (defun shelldon-hist ()
   (interactive)
   (switch-to-buffer (cdr (assoc (completing-read ">> " shelldon-hist) shelldon-hist))))
