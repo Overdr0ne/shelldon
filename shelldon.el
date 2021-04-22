@@ -8,6 +8,13 @@
   (shell-command command output-buffer error-buffer)
   (with-current-buffer output-buffer (buffer-string)))
 
+(defun shelldon-loop ()
+  (interactive)
+  (call-interactively 'shelldon)
+  (call-interactively 'shelldon-loop))
+
 (defun shelldon-hist ()
   (interactive)
   (switch-to-buffer (cdr (assoc (completing-read ">> " shelldon-hist) shelldon-hist))))
+
+(provide 'shelldon)
