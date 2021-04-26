@@ -5,7 +5,7 @@
   (setq output-buffer (concat " *" (number-to-string shelldon-nth) ":" command "*"))
   (setq shelldon-nth (+ shelldon-nth 1))
   (add-to-list 'shelldon-hist `(,(concat (number-to-string shelldon-nth) ":" command) . ,output-buffer))
-  (shell-command command output-buffer error-buffer)
+  (async-shell-command command output-buffer error-buffer)
   (with-current-buffer output-buffer (buffer-string)))
 
 (defun shelldon-loop ()
