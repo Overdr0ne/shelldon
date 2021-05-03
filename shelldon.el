@@ -1,7 +1,24 @@
 (defvar shelldon-nth 0)
 (defvar shelldon-hist '())
 (defun shelldon (command &optional output-buffer error-buffer)
-  (interactive "sEnter command: ")
+  (interactive
+   (list
+    (read-shell-command (if shell-command-prompt-show-cwd
+                            (format-message "Enter command in `%s': "
+                                            (abbreviate-file-name
+                                             default-directory))
+                          "Enter command: ")
+                        nil nil
+			(let ((filename
+			       (cond
+				(buffer-file-name)
+				((eq major-mode 'dired-mode)
+				 (dired-get-filename nil t)))))
+			  (and filename (file-relative-name filename))))
+    current-prefix-arg
+    shell-command-default-error-buffer))
+  (unless (string-match "&[ \t]*\\'" command)
+    (setq command (concat command " &")))
   (setq output-buffer (concat " *" (number-to-string shelldon-nth) ":" command "*"))
   (setq shelldon-nth (+ shelldon-nth 1))
   (add-to-list 'shelldon-hist `(,(concat (number-to-string shelldon-nth) ":" command) . ,output-buffer))
