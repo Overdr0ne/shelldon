@@ -8,19 +8,19 @@
                                              default-directory))
                           ">> ")
                         nil nil
-			(let ((filename
-			       (cond
-				(buffer-file-name)
-				((eq major-mode 'dired-mode)
-				 (dired-get-filename nil t)))))
-			  (and filename (file-relative-name filename))))
+                        (let ((filename
+                               (cond
+                                (buffer-file-name)
+                                ((eq major-mode 'dired-mode)
+                                 (dired-get-filename nil t)))))
+                          (and filename (file-relative-name filename))))
     current-prefix-arg
     shell-command-default-error-buffer))
   (unless (string-match "&[ \t]*\\'" command)
     (setq command (concat command " &")))
   (setq output-buffer (concat " *" (number-to-string shelldon-nth) ":" command "*"))
   (add-to-list 'shelldon-hist `(,(concat (number-to-string (length shelldon-hist)) ":" command) .
-				,output-buffer))
+                                ,output-buffer))
   (async-shell-command command output-buffer error-buffer)
   (with-current-buffer output-buffer (buffer-string)))
 
