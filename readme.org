@@ -1,0 +1,22 @@
+#+TITLE: Shelldon
+
+* Introduction
+  This is what I use for my main shell/terminal. It is basically just a simple wrapper around async-shell-command that primarily allows you to store and navigate separate command outputs among other things.
+
+* Installation
+  I just use straight+use-package like so:
+#+begin_src elisp
+  (use-package shelldon
+    :straight (shelldon :type git
+			:host github
+			:repo "Overdr0ne/shelldon"
+			:branch "master"))
+#+end_src
+* Usage
+  So it’s not like a typical terminal where all command inputs and outputs are mashed together into one buffer. Instead, you input each command into the minibuffer individually with the *shelldon* command, and output is sent to a buffer derived from the command name.
+
+  To search this history, use the *shelldon-hist* command, and select the command whose output you’d like to open.
+
+  If you’d like to then use it like an actual REPL, well, we’re just missing the loop part, so I’ve also provided *shelldon-loop*.
+
+  And that’s it. Enjoy...
