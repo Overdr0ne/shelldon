@@ -1,4 +1,3 @@
-(defvar shelldon-nth 0)
 (defvar shelldon-hist '())
 (defun shelldon (command &optional output-buffer error-buffer)
   (interactive
@@ -20,8 +19,8 @@
   (unless (string-match "&[ \t]*\\'" command)
     (setq command (concat command " &")))
   (setq output-buffer (concat " *" (number-to-string shelldon-nth) ":" command "*"))
-  (setq shelldon-nth (+ shelldon-nth 1))
-  (add-to-list 'shelldon-hist `(,(concat (number-to-string shelldon-nth) ":" command) . ,output-buffer))
+  (add-to-list 'shelldon-hist `(,(concat (number-to-string (length shelldon-hist)) ":" command) .
+				,output-buffer))
   (async-shell-command command output-buffer error-buffer)
   (with-current-buffer output-buffer (buffer-string)))
 
