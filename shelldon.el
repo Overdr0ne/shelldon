@@ -4,10 +4,10 @@
   (interactive
    (list
     (read-shell-command (if shell-command-prompt-show-cwd
-                            (format-message "Enter command in `%s': "
+                            (format-message ">> `%s': "
                                             (abbreviate-file-name
                                              default-directory))
-                          "Enter command: ")
+                          ">> ")
                         nil nil
 			(let ((filename
 			       (cond
