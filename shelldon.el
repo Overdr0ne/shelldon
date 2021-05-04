@@ -18,7 +18,7 @@
     shell-command-default-error-buffer))
   (unless (string-match "&[ \t]*\\'" command)
     (setq command (concat command " &")))
-  (setq output-buffer (concat " *" (number-to-string shelldon-nth) ":" command "*"))
+  (setq output-buffer (concat " *shelldon:" (number-to-string (length shelldon-hist)) ":" command "*"))
   (add-to-list 'shelldon-hist `(,(concat (number-to-string (length shelldon-hist)) ":" command) .
                                 ,output-buffer))
   (async-shell-command command output-buffer error-buffer)
