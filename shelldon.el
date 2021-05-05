@@ -26,7 +26,7 @@
 
 (defun shelldon-loop ()
   (interactive)
-  (loop (call-interactively 'shelldon)))
+  (while t (call-interactively 'shelldon)))
 
 (defun shelldon-hist ()
   (interactive)
