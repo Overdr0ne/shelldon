@@ -3,6 +3,9 @@
 * Introduction
   This is what I use for my main shell/terminal. It is basically just a simple wrapper around async-shell-command that primarily allows you to store and navigate separate command outputs among other things.
 
+  [[./example.gif]]
+  (I have lots of windowing and minibuffer enhancements from other packages, so yours probably won’t look exactly like this. See usage below for ideas...)
+
 * Installation
   I just use straight+use-package like so:
 #+begin_src elisp
