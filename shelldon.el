@@ -26,8 +26,7 @@
 
 (defun shelldon-loop ()
   (interactive)
-  (call-interactively 'shelldon)
-  (call-interactively 'shelldon-loop))
+  (loop (call-interactively 'shelldon)))
 
 (defun shelldon-hist ()
   (interactive)
