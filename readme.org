@@ -13,10 +13,14 @@
 			:branch "master"))
 #+end_src
 * Usage
-  So it’s not like a typical terminal where all command inputs and outputs are mashed together into one buffer. Instead, you input each command into the minibuffer individually with the *shelldon* command, and output is sent to a buffer derived from the command name.
+  - So it’s not like a typical terminal where all command inputs and outputs are mashed together into one buffer. Instead, you input each command into the minibuffer individually with the *shelldon* command, and output is sent to a buffer derived from the command name.
 
-  To search this history, use the *shelldon-hist* command, and select the command whose output you’d like to open.
+  - To search this history, use the *shelldon-hist* command, and select the command whose output you’d like to open.
 
-  If you’d like to then use it like an actual REPL, well, we’re just missing the loop part, so I’ve also provided *shelldon-loop*.
+  - If you’d like to then use it like an actual REPL, well, we’re just missing the loop part, so I’ve also provided a *shelldon-loop* command.
+
+  - Output buffer names begin with "*shelldon" such that you may configure display-buffer-alist to change how output windows are displayed. The buffer names also contain the executed command, so that may be used as well to configure windows on a per-command basis.
+
+  - I would also highly recommend installing the [[https://github.com/szermatt/emacs-bash-completion][bash-completion]] package, and probably some sort of completion enhancement package like [[https://github.com/raxod502/selectrum][selectrum]].
 
   And that’s it. Enjoy...
