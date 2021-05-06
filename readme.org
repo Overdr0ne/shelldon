@@ -8,13 +8,13 @@
 
 * Installation
   I just use straight+use-package like so:
-#+begin_src elisp
-  (use-package shelldon
-    :straight (shelldon :type git
-			:host github
-			:repo "Overdr0ne/shelldon"
-			:branch "master"))
-#+end_src
+  #+begin_src elisp
+    (use-package shelldon
+      :straight (shelldon :type git
+			  :host github
+			  :repo "Overdr0ne/shelldon"
+			  :branch "master"))
+  #+end_src
 * Usage
   - So it’s not like a typical terminal where all command inputs and outputs are mashed together into one buffer. Instead, you input each command into the minibuffer individually with the *shelldon* command, and output is sent to a buffer derived from the command name.
 
@@ -22,7 +22,19 @@
 
   - If you’d like to then use it like an actual REPL, well, we’re just missing the loop part, so I’ve also provided a *shelldon-loop* command.
 
-  - Output buffer names begin with "*shelldon" such that you may configure display-buffer-alist to change how output windows are displayed. The buffer names also contain the executed command, so that may be used as well to configure windows on a per-command basis.
+  - Output buffer names begin with "*shelldon" such that you may configure display-buffer-alist to change how output windows are displayed. I’m a big fan of side windows, so the above gif uses something like this:
+
+  #+begin_src elisp
+    (add-to-list 'display-buffer-alist
+		 `("\\(.*shelldon.*\\)"
+		   (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window)
+		   (side . right)
+		   (slot . 0)
+		   (window-width . 80)
+		   (reusable-frames . visible)))
+  #+end_src
+
+  The buffer names also contain the executed command, so that may be used as well to configure windows on a per-command basis.
 
   - I would also highly recommend installing the [[https://github.com/szermatt/emacs-bash-completion][bash-completion]] package, and probably some sort of completion enhancement package like [[https://github.com/raxod502/selectrum][selectrum]].
 
