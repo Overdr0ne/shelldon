@@ -1,3 +1,5 @@
+(require 'cl-macs)
+
 (defvar shelldon-hist '())
 (defun shelldon (command &optional output-buffer error-buffer)
   (interactive
@@ -26,7 +28,7 @@
 
 (defun shelldon-loop ()
   (interactive)
-  (while t (call-interactively 'shelldon)))
+  (loop (call-interactively 'shelldon)))
 
 (defun shelldon-hist ()
   (interactive)
