@@ -31,6 +31,11 @@
 
 (defvar shelldon-hist '())
 (defun shelldon (command &optional output-buffer error-buffer)
+  "Execute COMMAND asynchronously in the minibuffer with output history.
+
+Keep track of each command output in a separate buffer.  Optionally send stdout
+to OUTPUT-BUFFER and stderr to ERROR-BUFFER, just like the raw
+’async-shell-command’."
   (interactive
    (list
     (read-shell-command (if shell-command-prompt-show-cwd
@@ -56,10 +61,12 @@
   (with-current-buffer output-buffer (buffer-string)))
 
 (defun shelldon-loop ()
+  "Loops the shelldon command to more closely emulate a terminal."
   (interactive)
   (loop (call-interactively 'shelldon)))
 
 (defun shelldon-hist ()
+  "Displays the output of the selected command from the shelldon history."
   (interactive)
   (switch-to-buffer (cdr (assoc (completing-read ">> " shelldon-hist) shelldon-hist))))
 
