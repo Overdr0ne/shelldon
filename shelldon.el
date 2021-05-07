@@ -30,6 +30,8 @@
 (require 'cl-macs)
 
 (defvar shelldon-hist '())
+(defvar shelldon-prompt-str ">> ")
+(setq shelldon-prompt-str ">> ")
 (defun shelldon (command &optional output-buffer error-buffer)
   "Execute COMMAND asynchronously in the minibuffer with output history.
 
@@ -39,10 +41,11 @@ to OUTPUT-BUFFER and stderr to ERROR-BUFFER, just like the raw
   (interactive
    (list
     (read-shell-command (if shell-command-prompt-show-cwd
-                            (format-message ">> `%s': "
+                            (format-message "%s%s"
                                             (abbreviate-file-name
-                                             default-directory))
-                          ">> ")
+                                             default-directory)
+					    shelldon-prompt-str)
+                          shelldon-prompt-str)
                         nil nil
                         (let ((filename
                                (cond
@@ -68,7 +71,7 @@ to OUTPUT-BUFFER and stderr to ERROR-BUFFER, just like the raw
 (defun shelldon-output-history ()
   "Displays the output of the selected command from the shelldon history."
   (interactive)
-  (switch-to-buffer (cdr (assoc (completing-read ">> " shelldon-hist) shelldon-hist))))
+  (switch-to-buffer (cdr (assoc (completing-read shelldon-prompt-str shelldon-hist) shelldon-hist))))
 (defalias 'shelldon-hist 'shelldon-output-history
   "shelldon-hist is deprecated, use shelldon-output-history")
 
