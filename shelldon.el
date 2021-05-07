@@ -65,10 +65,12 @@ to OUTPUT-BUFFER and stderr to ERROR-BUFFER, just like the raw
   (interactive)
   (loop (call-interactively 'shelldon)))
 
-(defun shelldon-hist ()
+(defun shelldon-output-history ()
   "Displays the output of the selected command from the shelldon history."
   (interactive)
   (switch-to-buffer (cdr (assoc (completing-read ">> " shelldon-hist) shelldon-hist))))
+(defalias 'shelldon-hist 'shelldon-output-history
+  "shelldon-hist is deprecated, use shelldon-output-history")
 
 (provide 'shelldon)
 
