@@ -44,7 +44,7 @@ to OUTPUT-BUFFER and stderr to ERROR-BUFFER, just like the raw
                             (format-message "%s%s"
                                             (abbreviate-file-name
                                              default-directory)
-					    shelldon-prompt-str)
+                                            shelldon-prompt-str)
                           shelldon-prompt-str)
                         nil nil
                         (let ((filename
