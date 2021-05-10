@@ -43,7 +43,6 @@ context."
 
 (defvar shelldon-hist '())
 (defvar shelldon-prompt-str ">> ")
-(setq shelldon-prompt-str ">> ")
 (defun shelldon-internal (command &optional output-buffer error-buffer)
   "Execute COMMAND asynchronously in the minibuffer with output history.
 
