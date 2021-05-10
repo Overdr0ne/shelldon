@@ -27,7 +27,7 @@
 
 ;;; Code:
 
-(require 'cl-macs)
+(require 'cl)
 
 (defvar shelldon-hist '())
 (defvar shelldon-prompt-str ">> ")
