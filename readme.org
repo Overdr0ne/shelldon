@@ -1,41 +1,39 @@
 #+TITLE: Shelldon
 
 * Introduction
-  This is what I use for my main shell/terminal. It is basically just a simple wrapper around async-shell-command that primarily allows you to store and navigate separate command outputs among other things.
+This is what I use for my main shell/terminal. It is basically just a simple wrapper around async-shell-command that primarily allows you to store and navigate separate command outputs among other things.
 
-  [[./example.gif]]
-  (I have lots of windowing and minibuffer enhancements from other packages, so yours probably won’t look exactly like this. See usage below for ideas...)
+[[./example.gif]]
+(I have lots of windowing and minibuffer enhancements from other packages, so yours probably won’t look exactly like this. See usage below for ideas...)
 
 * Installation
-  I just use straight+use-package like so:
-  #+begin_src elisp
-    (use-package shelldon
-      :straight (shelldon :type git
-			  :host github
-			  :repo "Overdr0ne/shelldon"
-			  :branch "master"))
-  #+end_src
+I just use straight+use-package like so:
+#+begin_src elisp
+  (use-package shelldon
+    :straight (shelldon :type git
+                        :host github
+                        :repo "Overdr0ne/shelldon"
+                        :branch "master"))
+#+end_src
 * Usage
-  - So it’s not like a typical terminal where all command inputs and outputs are mashed together into one buffer. Instead, you input each command into the minibuffer individually with the *shelldon* command, and output is sent to a buffer derived from the command name.
+- So it’s not like a typical terminal where all command inputs and outputs are mashed together into one buffer. Instead, you input each command into the minibuffer individually with the *shelldon* command, and output is sent to a buffer derived from the command name.
 
-  - To search this history, use the *shelldon-hist* command, and select the command whose output you’d like to open.
+- To search this history, use the *shelldon-hist* command, and select the command whose output you’d like to open.
 
-  - If you’d like to then use it like an actual REPL, well, we’re just missing the loop part, so I’ve also provided a *shelldon-loop* command.
+- If you’d like to then use it like an actual REPL, well, we’re just missing the loop part, so I’ve also provided a *shelldon-loop* command.
 
-  - By popular demand, you may also change the workdir without leaving shelldon-loop with the *shelldon-cd* command, bound to "C-x C-f" in *minibuffer-local-shell-command-map* by default.
+- By popular demand, you may also change the workdir without leaving shelldon-loop with the *shelldon-cd* command, bound to "C-x C-f" in *minibuffer-local-shell-command-map* by default.
 
-  - Customize the prompt by modifying the *shelldon-prompt-str* variable. You may also toggle the display of the current working directory with the shell-command-prompt-show-cwd, just like other shell commands.
+- Customize the prompt by modifying the *shelldon-prompt-str* variable. You may also toggle the display of the current working directory with the shell-command-prompt-show-cwd, just like other shell commands.
 
-  - Output buffer names begin with "*shelldon" such that you may configure display-buffer-alist to change how output windows are displayed. I’m a big fan of side windows, so the above gif uses something like this:
+- Output buffer names begin with "*shelldon" such that you may configure display-buffer-alist to change how output windows are displayed. I’m a big fan of side windows, so I have configured things to display output buffers in the right side window by default. You can change this of course, by simply modifying the display-buffer-alist. For example, you could display the output buffer in the bottom side window like so:
 
   #+begin_src elisp
-    (add-to-list 'display-buffer-alist
-		 `("\\(.*shelldon.*\\)"
-		   (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window)
-		   (side . right)
-		   (slot . 0)
-		   (window-width . 80)
-		   (reusable-frames . visible)))
+    (setf (alist-get "*\\(shelldon.*\\)" display-buffer-alist)
+          `((display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window)
+            (side . bottom)
+            (slot . 0)
+            (reusable-frames . visible)))
   #+end_src
 
   The buffer names also contain the executed command, so that may be used as well to configure windows on a per-command basis.
