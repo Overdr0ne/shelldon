@@ -40,4 +40,9 @@ I just use straight+use-package like so:
 
   - I would also highly recommend installing the [[https://github.com/szermatt/emacs-bash-completion][bash-completion]] package, and probably some sort of completion enhancement package like [[https://github.com/raxod502/selectrum][selectrum]].
 
+  - If you would like shelldon to inherit your startup shell configurations, just pass the "-ic" flags to the shell(credit: http://www.nextpoint.se/?p=864):
+  #+begin_src elisp
+    (setq shell-command-switch “-ic”)
+  #+end_src
+
   And that’s it. Enjoy...
