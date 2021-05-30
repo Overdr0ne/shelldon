@@ -72,7 +72,7 @@ to OUTPUT-BUFFER and stderr to ERROR-BUFFER, just like the raw
   (add-to-list 'shelldon-hist `(,(concat (number-to-string (length shelldon-hist)) ":" command) .
                                 ,output-buffer))
   (shell-command command output-buffer error-buffer)
-  (with-current-buffer output-buffer (buffer-string))
+  (with-current-buffer output-buffer (view-mode))
   nil)
 (defun shelldon ()
   "Execute given asynchronously in the minibuffer with output history.
