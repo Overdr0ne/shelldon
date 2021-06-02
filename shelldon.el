@@ -43,7 +43,7 @@ context."
 
 (defvar shelldon-hist '())
 (defvar shelldon-prompt-str ">> ")
-(defun shelldon-internal (command)
+(defun shelldon-async-command (command)
   "Execute string COMMAND in inferior shell; display output, if any.
 With prefix argument, insert the COMMAND's output at point.
 
@@ -130,7 +130,7 @@ the change and re-execute in the new context."
   (interactive)
   (let ((rtn t))
     (while rtn
-      (setq rtn (catch 'shelldon-cwd (call-interactively #'shelldon-internal)))
+      (setq rtn (catch 'shelldon-cwd (call-interactively #'shelldon-async-command)))
       (when rtn
         (setq default-directory rtn)
         (setq list-buffers-directory rtn)))))
