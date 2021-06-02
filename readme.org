@@ -38,11 +38,18 @@ I just use straight+use-package like so:
 
   The buffer names also contain the executed command, so that may be used as well to configure windows on a per-command basis.
 
-  - I would also highly recommend installing the [[https://github.com/szermatt/emacs-bash-completion][bash-completion]] package, and probably some sort of completion enhancement package like [[https://github.com/raxod502/selectrum][selectrum]].
+- I would also highly recommend installing the [[https://github.com/szermatt/emacs-bash-completion][bash-completion]] package, and probably some sort of completion enhancement package like [[https://github.com/raxod502/selectrum][selectrum]].
 
-  - If you would like shelldon to inherit your startup shell configurations, just pass the "-ic" flags to the shell(credit: http://www.nextpoint.se/?p=864):
+- If you would like shelldon to inherit your startup shell configurations, just pass the "-ic" flags to the shell(credit: http://www.nextpoint.se/?p=864):
   #+begin_src elisp
     (setq shell-command-switch “-ic”)
+  #+end_src
+
+- To enable ANSI colors, these must be set:
+  #+begin_src elisp
+    (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
+    (add-to-list 'comint-output-filter-functions 'ansi-color-process-output)
+    (autoload 'ansi-color-for-comint-mode-on "ansi-color" nil t)
   #+end_src
 
   And that’s it. Enjoy...
