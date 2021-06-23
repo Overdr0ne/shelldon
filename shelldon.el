@@ -59,6 +59,10 @@ context."
   "Execute string COMMAND in inferior shell; display output, if any.
 With prefix argument, insert the COMMAND's output at point.
 
+This is just a copy-pasta of the `async-shell-command' that has all the
+superfluous stuff ripped out.  It also sets up a process environment for
+the command that optionally enables ANSI colors.
+
 In Elisp, you will often be better served by calling `call-process' or
 `start-process' directly, since they offer more control and do not
 impose the use of a shell (with its need to quote arguments)."
