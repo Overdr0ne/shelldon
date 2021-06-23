@@ -24,6 +24,8 @@ I just use straight+use-package like so:
 
 - By popular demand, you may also change the workdir without leaving shelldon-loop with the *shelldon-cd* command, bound to "C-x C-f" in *minibuffer-local-shell-command-map* by default.
 
+- You may also send commands to shelldon from a buffer with the *shelldon-send-region* and *shelldon-send-current-line* commands. This is particularly useful when writing full-fledged shell scripts, allowing you to test as you go.
+
 - Customize the prompt by modifying the *shelldon-prompt-str* variable. You may also toggle the display of the current working directory with the shell-command-prompt-show-cwd, just like other shell commands.
 
 - Output buffer names begin with "*shelldon" such that you may configure display-buffer-alist to change how output windows are displayed. I’m a big fan of side windows, so I have configured things to display output buffers in the right side window by default. You can change this of course, by simply modifying the display-buffer-alist. For example, you could display the output buffer in the bottom side window like so:

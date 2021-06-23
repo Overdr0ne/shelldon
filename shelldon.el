@@ -171,6 +171,20 @@ the change and re-execute in the new context."
 	       (window-width . 80)
 	       (reusable-frames . visible)))
 
+(defun shelldon-send-line-at-point ()
+  "Send the current line to shelldon and display the result."
+  (interactive)
+  (let ((cmd (buffer-substring-no-properties (line-beginning-position) (line-end-position))))
+    (shelldon-async-command cmd)))
+
+(defun shelldon-send-region (start end)
+  "Send region from START to END to shelldon and display the result."
+  (interactive "r")
+  (unless (region-active-p)
+    (user-error "No region"))
+  (let ((cmd (buffer-substring-no-properties start end)))
+    (shelldon-async-command cmd)))
+
 (provide 'shelldon)
 
 ;;; shelldon.el ends here
