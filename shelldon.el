@@ -29,6 +29,15 @@
 
 (require 'cl)
 
+(defgroup shelldon nil
+  "A shell command interface that keeps track of output buffers."
+  :group 'convenience
+  :prefix "shelldon-")
+
+(defcustom shelldon-prompt-str ">> "
+  "A string prepending the shelldon prompt, much like the PS1 EV in BASH."
+  :type 'editable-field)
+
 (defun shelldon-cd ()
   "Change directories without leaving shelldon context.
 
@@ -41,8 +50,7 @@ context."
 
 (define-key minibuffer-local-shell-command-map (kbd "C-x C-f") #'shelldon-cd)
 
-(defvar shelldon-hist '())
-(defvar shelldon-prompt-str ">> ")
+(defvar shelldon--hist '())
 (defun shelldon-async-command (command)
   "Execute string COMMAND in inferior shell; display output, if any.
 With prefix argument, insert the COMMAND's output at point.
@@ -68,12 +76,12 @@ impose the use of a shell (with its need to quote arguments)."
        (and filename (file-relative-name filename))))))
   ;; (when current-prefix-arg (setq output-buffer current-prefix-arg))
   ;; Look for a handler in case default-directory is a remote file name.
-  (let ((output-buffer (concat "*shelldon:" (number-to-string (length shelldon-hist)) ":" command "*"))
+  (let ((output-buffer (concat "*shelldon:" (number-to-string (length shelldon--hist)) ":" command "*"))
         (error-buffer shell-command-default-error-buffer)
         (handler
 	 (find-file-name-handler (directory-file-name default-directory)
 				 'shell-command)))
-    (add-to-list 'shelldon-hist `(,(concat (number-to-string (length shelldon-hist)) ":" command) . ,output-buffer))
+    (add-to-list 'shelldon--hist `(,(concat (number-to-string (length shelldon--hist)) ":" command) . ,output-buffer))
     (if handler
 	(funcall handler 'shell-command command output-buffer error-buffer)
       ;; Output goes in a separate buffer.
@@ -143,9 +151,9 @@ the change and re-execute in the new context."
 (defun shelldon-output-history ()
   "Displays the output of the selected command from the shelldon history."
   (interactive)
-  (switch-to-buffer (cdr (assoc (completing-read shelldon-prompt-str shelldon-hist) shelldon-hist))))
-(defalias 'shelldon-hist 'shelldon-output-history
-  "shelldon-hist is deprecated, use shelldon-output-history")
+  (switch-to-buffer (cdr (assoc (completing-read shelldon-prompt-str shelldon--hist) shelldon--hist))))
+(defalias 'shelldon--hist 'shelldon-output-history
+  "shelldon--hist is deprecated, use shelldon-output-history")
 
 (add-to-list 'display-buffer-alist
 	     `("*\\(shelldon.*\\)"
