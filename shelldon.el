@@ -38,6 +38,10 @@
   "A string prepending the shelldon prompt, much like the PS1 EV in BASH."
   :type 'editable-field)
 
+(defcustom shelldon-ansi-colors t
+  "Toggle ANSI color output on shelldon’s output."
+  :type 'toggle)
+
 (defun shelldon-cd ()
   "Change directories without leaving shelldon context.
 
@@ -98,7 +102,7 @@ impose the use of a shell (with its need to quote arguments)."
 	    (let* ((process-environment
                     (nconc
                      (list
-                      (format "TERM=%s" "eterm-color")
+                      (format "TERM=%s" (if shelldon-ansi-colors "eterm-color" "dumb"))
                       (format "TERMINFO=%s" data-directory)
                       (format "INSIDE_EMACS=%s" emacs-version))
                      process-environment)))
