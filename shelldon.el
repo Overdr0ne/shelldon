@@ -84,12 +84,13 @@ impose the use of a shell (with its need to quote arguments)."
        (and filename (file-relative-name filename))))))
   ;; (when current-prefix-arg (setq output-buffer current-prefix-arg))
   ;; Look for a handler in case default-directory is a remote file name.
-  (let ((output-buffer (concat "*shelldon:" (number-to-string (length shelldon--hist)) ":" command "*"))
-        (error-buffer shell-command-default-error-buffer)
-        (handler
-	 (find-file-name-handler (directory-file-name default-directory)
-				 'shell-command)))
-    (add-to-list 'shelldon--hist `(,(concat (number-to-string (length shelldon--hist)) ":" command) . ,output-buffer))
+  (let* ((output-buffer (concat "*shelldon:" (number-to-string (length shelldon--hist)) ":" command "*"))
+         (hidden-output-buffer (concat " " output-buffer))
+         (error-buffer shell-command-default-error-buffer)
+         (handler
+	  (find-file-name-handler (directory-file-name default-directory)
+				  'shell-command)))
+    (add-to-list 'shelldon--hist `(,(concat (number-to-string (length shelldon--hist)) ":" command) . ,hidden-output-buffer))
     (if handler
 	(funcall handler 'shell-command command output-buffer error-buffer)
       ;; Output goes in a separate buffer.
@@ -136,7 +137,7 @@ impose the use of a shell (with its need to quote arguments)."
             ;; FIXME: When the output buffer is hidden before the shell process is started,
             ;; ANSI colors are not displayed. I have no idea why.
             (view-mode)
-            (rename-buffer (concat " " output-buffer)))))))
+            (rename-buffer hidden-output-buffer))))))
   nil)
 (defun shelldon ()
   "Execute given asynchronously in the minibuffer with output history.
