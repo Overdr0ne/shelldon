@@ -38,7 +38,7 @@
   "A string prepending the shelldon prompt, much like the PS1 EV in BASH."
   :type 'editable-field)
 
-(defcustom shelldon-ansi-colors t
+(defcustom shelldon-ansi-colors nil
   "Toggle ANSI color output on shelldon’s output."
   :type 'toggle)
 
