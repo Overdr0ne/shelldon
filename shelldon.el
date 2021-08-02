@@ -29,6 +29,7 @@
 
 (require 'cl-lib)
 (require 'shell)
+(require 'dired)
 
 (defgroup shelldon nil
   "A shell command interface that keeps track of output buffers."
