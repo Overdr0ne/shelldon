@@ -27,7 +27,7 @@
 
 ;;; Code:
 
-(require 'cl)
+(require 'cl-lib)
 (require 'shell)
 
 (defgroup shelldon nil
