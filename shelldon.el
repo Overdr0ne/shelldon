@@ -160,7 +160,7 @@ the change and re-execute in the new context."
 (defun shelldon-loop ()
   "Loops the shelldon command to more closely emulate a terminal."
   (interactive)
-  (loop (call-interactively #'shelldon)))
+  (cl-loop (call-interactively #'shelldon)))
 
 (defun shelldon-output-history ()
   "Displays the output of the selected command from the shelldon history."
