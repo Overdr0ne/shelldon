@@ -28,6 +28,7 @@
 ;;; Code:
 
 (require 'cl)
+(require 'shell)
 
 (defgroup shelldon nil
   "A shell command interface that keeps track of output buffers."
@@ -114,7 +115,7 @@ impose the use of a shell (with its need to quote arguments)."
 	      (setq proc
 		    (start-process-shell-command "Shell" buffer command)))
 	    (setq mode-line-process '(":%s"))
-	    (require 'shell) (shell-mode)
+	    (shelldon-mode)
             (set-process-sentinel proc #'shell-command-sentinel)
 	    ;; Use the comint filter for proper handling of
 	    ;; carriage motion (see comint-inhibit-carriage-motion).
@@ -136,9 +137,13 @@ impose the use of a shell (with its need to quote arguments)."
                               `((name . ,nonce)))))
             ;; FIXME: When the output buffer is hidden before the shell process is started,
             ;; ANSI colors are not displayed. I have no idea why.
-            (view-mode)
             (rename-buffer hidden-output-buffer))))))
   nil)
+
+(define-derived-mode shelldon-mode shell-mode "Shelldon"
+  "Mode for displaying shelldon output."
+  (view-mode +1))
+
 (defun shelldon ()
   "Execute given asynchronously in the minibuffer with output history.
 
@@ -187,5 +192,4 @@ the change and re-execute in the new context."
     (shelldon-async-command cmd)))
 
 (provide 'shelldon)
-
 ;;; shelldon.el ends here

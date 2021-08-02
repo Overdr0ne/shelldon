@@ -49,7 +49,7 @@ I just use straight+use-package like so:
 
 - To enable ANSI colors, these must be set:
   #+begin_src elisp
-    (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
+    (add-hook 'shelldon-mode-hook 'ansi-color-for-comint-mode-on)
     (add-to-list 'comint-output-filter-functions 'ansi-color-process-output)
     (autoload 'ansi-color-for-comint-mode-on "ansi-color" nil t)
   #+end_src
