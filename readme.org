@@ -1,7 +1,7 @@
 #+TITLE: Shelldon
 
 * Introduction
-This is what I use for my main shell/terminal. It is basically just a simple wrapper around async-shell-command that primarily allows you to store and navigate separate command outputs among other things.
+This is what I use for my main shell/terminal. It is basically just a simple wrapper around async-shell-command that allows you to store and navigate separate command outputs among other things.
 
 [[./example.gif]]
 (I have lots of windowing and minibuffer enhancements from other packages, so yours probably won’t look exactly like this. See usage below for ideas...)
@@ -13,7 +13,8 @@ I just use straight+use-package like so:
     :straight (shelldon :type git
                         :host github
                         :repo "Overdr0ne/shelldon"
-                        :branch "master"))
+                        :branch "master"
+                        :files ("shelldon.el")))
 #+end_src
 * Usage
 - So it’s not like a typical terminal where all command inputs and outputs are mashed together into one buffer. Instead, you input each command into the minibuffer individually with the *shelldon* command, and output is sent to a buffer derived from the command name.
