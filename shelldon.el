@@ -1,8 +1,11 @@
-;;; shelldon.el --- a friendly little shell in the minibuffer  -*- lexical-binding: t; -*-
+;;; shelldon.el --- A friendly little shell in the minibuffer  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2021 overdr0ne
 
 ;; Author: overdr0ne <scmorris.dev@gmail.com>
+;; Version: 1.0
+;; URL: https://github.com/Overdr0ne/shelldon
+;; Package-Requires: ((emacs "27.1"))
 ;; Keywords: tools, convenience
 
 ;; This program is free software; you can redistribute it and/or modify
