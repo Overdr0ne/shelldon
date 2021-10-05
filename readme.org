@@ -43,6 +43,14 @@ I just use straight+use-package like so:
 
 - I would also highly recommend installing the [[https://github.com/szermatt/emacs-bash-completion][bash-completion]] package, and probably some sort of completion enhancement package like [[https://github.com/raxod502/selectrum][selectrum]].
 
+- If you do use some kind of autocompletion extension, you may wish to disable sorting. There’s no universal way to do that unfortunately, but here’s what I do for selectrum, to give you an idea:
+  #+begin_src elisp
+    (advice-add #'shelldon-output-history :around
+		(lambda (old-fn)
+		    (let ((selectrum-should-sort nil))
+		    (funcall old-fn))))
+  #+end_src
+
 - If you would like shelldon to inherit your startup shell configurations, just pass the "-ic" flags to the shell(credit: http://www.nextpoint.se/?p=864):
   #+begin_src elisp
     (setq shell-command-switch “-ic”)
