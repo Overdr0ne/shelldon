@@ -67,4 +67,6 @@ I just use straight+use-package like so:
     (autoload 'ansi-color-for-comint-mode-on "ansi-color" nil t)
   #+end_src
 
-  And that’s it. Enjoy...
+- You may need to emulate terminal keypresses in some situations, like for interactive menus. I use the *term-send-* set of functions for this purpose. So I map <up> to *term-send-up* and <down> to *term-send-down*.
+
+And that’s about it. Enjoy...
