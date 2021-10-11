@@ -85,3 +85,6 @@ This is analogous to, and derived from Shell-mode -- basically the mode for disp
   #+end_src
 
 And that’s about it. Enjoy...
+
+* Todos
+** It might be possible to generalize this for other shells like the python shell.
