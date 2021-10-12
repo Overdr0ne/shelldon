@@ -23,7 +23,7 @@ In a standard terminal, all command inputs and outputs are tangled together in o
 |----------------------+---------------------------------------|
 | shelldon             | enter shell command in the minibuffer |
 | shelldon-loop        | enter a sequence of shell commands    |
-| shelldon-output-hist | search shelldon output history        |
+| shelldon-output-hist | go too shelldon output buffer         |
 
 Since Shelldon is largely just an enhancement of built-in shell interaction facilities, much of this is already documented within Emacs, but I've tried to present a unified workflow here.
 
@@ -39,7 +39,7 @@ Since Shelldon is largely just an enhancement of built-in shell interaction faci
 ** shelldon-mode
 This is analogous to, and derived from Shell-mode -- basically the mode for displaying shelldon output.
 
-- To search the output history, use the *shelldon-hist* command, and select the command whose output you’d like to open.
+- To search the output history, use the *shelldon-output-hist* command, and select the command whose output you’d like to open.
 
 - Output buffer names begin with "*shelldon" such that you may configure display-buffer-alist to change how output windows are displayed. I’m a big fan of side windows, so I have configured things to display output buffers in the right side window by default. You can change this of course, by simply modifying the display-buffer-alist. For example, you could display the output buffer in the bottom side window like so:
 
