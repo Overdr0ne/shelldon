@@ -168,6 +168,7 @@ the change and re-execute in the new context."
   (interactive)
   (cl-loop (call-interactively #'shelldon)))
 
+;;;###autoload
 (defun shelldon-output-history ()
   "Displays the output of the selected command from the shelldon history."
   (interactive)

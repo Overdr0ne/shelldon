@@ -19,11 +19,11 @@ I just use straight+use-package like so:
 * Usage
 In a standard terminal, all command inputs and outputs are tangled together in one buffer. In Shelldon, each command is entered into the minibuffer individually with the *shelldon* command, much like an internal M-x command, and output is sent to a buffer derived from each command name. Here are the core commands.
 
-| command       | description                           |
-|---------------+---------------------------------------|
-| shelldon      | enter shell command in the minibuffer |
-| shelldon-loop | enter a sequence of shell commands    |
-| shelldon-hist | search shelldon output history        |
+| command              | description                           |
+|----------------------+---------------------------------------|
+| shelldon             | enter shell command in the minibuffer |
+| shelldon-loop        | enter a sequence of shell commands    |
+| shelldon-output-hist | search shelldon output history        |
 
 Since Shelldon is largely just an enhancement of built-in shell interaction facilities, much of this is already documented within Emacs, but I've tried to present a unified workflow here.
 
