@@ -184,12 +184,14 @@ the change and re-execute in the new context."
 	       (window-width . 80)
 	       (reusable-frames . visible)))
 
+;;;###autoload
 (defun shelldon-send-line-at-point ()
   "Send the current line to shelldon and display the result."
   (interactive)
   (let ((cmd (buffer-substring-no-properties (line-beginning-position) (line-end-position))))
     (shelldon-async-command cmd)))
 
+;;;###autoload
 (defun shelldon-send-region (start end)
   "Send region from START to END to shelldon and display the result."
   (interactive "r")
