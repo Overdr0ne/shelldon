@@ -148,6 +148,7 @@ impose the use of a shell (with its need to quote arguments)."
   "Mode for displaying shelldon output."
   (view-mode +1))
 
+;;;###autoload
 (defun shelldon ()
   "Execute given asynchronously in the minibuffer with output history.
 
@@ -161,6 +162,7 @@ the change and re-execute in the new context."
         (setq default-directory rtn)
         (setq list-buffers-directory rtn)))))
 
+;;;###autoload
 (defun shelldon-loop ()
   "Loops the shelldon command to more closely emulate a terminal."
   (interactive)
