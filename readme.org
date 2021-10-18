@@ -1,5 +1,7 @@
 #+TITLE: Shelldon
 
+[[./shell.jpg]]
+
 * Introduction
 This is what I use for my main shell/terminal. It is basically just a simple wrapper around async-shell-command that allows you to store and navigate separate command outputs among other things.
 
