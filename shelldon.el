@@ -1,4 +1,4 @@
-;;; shelldon.el --- A friendly little shell in the minibuffer  -*- lexical-binding: t; -*-
+;;; shelldon.el --- an enhanced shell interface -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2021 overdr0ne
 
@@ -24,9 +24,9 @@
 ;;; Commentary:
 
 ;; https://github.com/Overdr0ne/shelldon
-;; It is basically just a simple wrapper around async-shell-command that
-;; primarily allows you to store and navigate separate command outputs among
-;; other things.
+;; Shelldon is largely just a modification of async-shell-command that
+;; provides a more complete minibuffer workflow by separating command
+;; outputs into searchable, separate buffers among other things.
 
 ;;; Code:
 

@@ -1,9 +1,9 @@
-#+TITLE: Shelldon
+#+TITLE: Shelldon: an enhanced shell interface
 
 [[./shell.jpg]]
 
 * Introduction
-This is what I use for my main shell/terminal. It is basically just a simple wrapper around async-shell-command that allows you to store and navigate separate command outputs among other things.
+This is what I use for my main shell/terminal. It is largely just an enhancement of async-shell-command that provides a more minibuffer-centric workflow, allowing you to store and navigate command outputs in separate buffers among other things.
 
 [[./example.gif]]
 (I have lots of windowing and minibuffer enhancements from other packages, so yours probably won’t look exactly like this. See usage below for ideas...)
