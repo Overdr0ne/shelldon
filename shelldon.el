@@ -57,7 +57,12 @@ context."
     (setq shelldon-wd (call-interactively #'cd))
     (throw 'shelldon-cwd shelldon-wd)))
 
-(define-key minibuffer-local-shell-command-map (kbd "C-x C-f") #'shelldon-cd)
+(defvar minibuffer-local-shelldon-command-map
+  (let ((map (copy-keymap minibuffer-local-shell-command-map)))
+    (set-keymap-parent map minibuffer-local-map)
+    (define-key map (kbd "C-x C-f") #'shelldon-cd)
+    map)
+  "Keymap used for completing shell commands in minibuffer.")
 
 (defvar shelldon--hist '())
 (defun shelldon-async-command (command)
@@ -73,14 +78,15 @@ In Elisp, you will often be better served by calling `call-process' or
 impose the use of a shell (with its need to quote arguments)."
   (interactive
    (list
-    (read-shell-command
+    (read-from-minibuffer
      (if shell-command-prompt-show-cwd
          (format-message "%s%s"
                          (abbreviate-file-name
                           default-directory)
                          shelldon-prompt-str)
        shelldon-prompt-str)
-     nil nil
+     nil minibuffer-local-shelldon-command-map nil
+     'shell-command-history
      (let ((filename
             (cond
              (buffer-file-name)
