@@ -34,7 +34,12 @@ Since Shelldon is largely just an enhancement of built-in shell interaction faci
 
 - Customize the prompt by modifying the *shelldon-prompt-str* variable. You may also toggle the display of the current working directory with the shell-command-prompt-show-cwd, just like other shell commands.
 
-- By popular demand, you may also change the workdir without leaving shelldon-loop with the *shelldon-cd* command, bound to "C-x C-f" in *minibuffer-local-shell-command-map* by default. Personally, I just use dired when I want to navigate.
+- By popular demand, you may also change the workdir without leaving shelldon-loop with the *shelldon-cd* command, bound to "C-x C-f" in *minibuffer-local-shelldon-command-map* by default. This requires:
+  #+begin_src elisp
+  (setf enable-recursive-minibuffers t)
+  #+end_src
+  Personally, I just use dired when I want to navigate.
+- You may of course add any other local minibuffer keybindings you like to *minibuffer-local-shelldon-command-map*.
 
 ** shelldon-mode
 This is analogous to, and derived from Shell-mode -- basically the mode for displaying shelldon output.
