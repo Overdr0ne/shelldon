@@ -57,7 +57,7 @@ context."
     (setq shelldon-wd (call-interactively #'cd))
     (throw 'shelldon-cwd shelldon-wd)))
 
-(defvar minibuffer-local-shelldon-command-map
+(defvar shelldon-minibuffer-local-command-map
   (let ((map (copy-keymap minibuffer-local-shell-command-map)))
     (set-keymap-parent map minibuffer-local-map)
     (define-key map (kbd "C-x C-f") #'shelldon-cd)
@@ -85,7 +85,7 @@ impose the use of a shell (with its need to quote arguments)."
                           default-directory)
                          shelldon-prompt-str)
        shelldon-prompt-str)
-     nil minibuffer-local-shelldon-command-map nil
+     nil shelldon-minibuffer-local-command-map nil
      'shell-command-history
      (let ((filename
             (cond
