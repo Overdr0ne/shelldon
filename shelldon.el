@@ -179,7 +179,7 @@ the change and re-execute in the new context."
   "Displays the output of the selected command from the shelldon history."
   (interactive)
   (pop-to-buffer (cdr (assoc (completing-read shelldon-prompt-str shelldon--hist) shelldon--hist))))
-(defalias 'shelldon--hist 'shelldon-output-history
+(defalias 'shelldon--hist #'shelldon-output-history
   "shelldon--hist is deprecated, use shelldon-output-history")
 
 (add-to-list 'display-buffer-alist
