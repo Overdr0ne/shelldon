@@ -1,4 +1,4 @@
-;;; shelldon.el --- an enhanced shell interface -*- lexical-binding: t; -*-
+;;; shelldon.el --- An enhanced shell interface -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2021 overdr0ne
 
