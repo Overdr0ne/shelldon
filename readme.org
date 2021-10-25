@@ -1,5 +1,7 @@
 #+TITLE: Shelldon: an enhanced shell interface
 
+[[https://melpa.org/#/shelldon][file:https://melpa.org/packages/shelldon-badge.svg]]
+
 [[./shell.jpg]]
 
 * Introduction
