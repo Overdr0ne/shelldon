@@ -119,11 +119,9 @@ impose the use of a shell (with its need to quote arguments)."
       ;; shell-command and assume that it won't mess the match-data!
       (save-match-data
         (let* ((buffer (get-buffer-create output-buffer))
-               (proc (get-buffer-process buffer))
-               (directory default-directory))
+               (proc (get-buffer-process buffer)))
           (with-current-buffer buffer
             (shell-command-save-pos-or-erase)
-	    (setq default-directory directory)
 	    (let* ((process-environment
                     (nconc
                      (list
