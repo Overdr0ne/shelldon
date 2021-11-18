@@ -65,6 +65,30 @@ context."
   "Keymap used for completing shell commands in minibuffer.")
 
 (defvar shelldon--hist '())
+(defun shelldon--get-command ()
+  "Get command string from the user."
+  (minibuffer-with-setup-hook
+      (lambda ()
+        (shell-completion-vars)
+        (set (make-local-variable 'minibuffer-default-add-function)
+             'minibuffer-default-add-shell-commands))
+    (let ((prompt (format-message "%s%s"
+                                  (abbreviate-file-name
+                                   default-directory)
+                                  shelldon-prompt-str))
+          (initial-contents nil))
+      (read-from-minibuffer prompt initial-contents
+                            shelldon-minibuffer-local-command-map
+                            nil
+                            'shell-command-history
+                            (list
+                             (list
+                              (let ((filename
+                                     (cond
+                                      (buffer-file-name)
+                                      ((eq major-mode 'dired-mode)
+                                       (dired-get-filename nil t)))))
+                                (and filename (file-relative-name filename)))))))))
 (defun shelldon-async-command (command)
   "Execute string COMMAND in inferior shell; display output, if any.
 With prefix argument, insert the COMMAND's output at point.
@@ -77,26 +101,7 @@ In Elisp, you will often be better served by calling `call-process' or
 `start-process' directly, since they offer more control and do not
 impose the use of a shell (with its need to quote arguments)."
   (interactive
-   (list (minibuffer-with-setup-hook
-             (lambda ()
-               (shell-completion-vars)
-               (set (make-local-variable 'minibuffer-default-add-function)
-                    'minibuffer-default-add-shell-commands))
-           (let ((prompt (format-message "%s%s"
-                                         (abbreviate-file-name
-                                          default-directory)
-                                         shelldon-prompt-str))
-                 (initial-contents nil))
-             (read-from-minibuffer prompt initial-contents
-                                   shelldon-minibuffer-local-command-map
-                                   nil
-                                   'shell-command-history
-                                   (list (list (let ((filename
-                                                      (cond
-                                                       (buffer-file-name)
-                                                       ((eq major-mode 'dired-mode)
-                                                        (dired-get-filename nil t)))))
-                                                 (and filename (file-relative-name filename))))))))))
+   (list (shelldon--get-command)))
   ;; (when current-prefix-arg (setq output-buffer current-prefix-arg))
   ;; Look for a handler in case default-directory is a remote file name.
   (let* ((output-buffer (concat "*shelldon:" (number-to-string (length shelldon--hist)) ":" command "*"))
