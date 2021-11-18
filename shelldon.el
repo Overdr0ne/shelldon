@@ -77,22 +77,26 @@ In Elisp, you will often be better served by calling `call-process' or
 `start-process' directly, since they offer more control and do not
 impose the use of a shell (with its need to quote arguments)."
   (interactive
-   (list
-    (read-from-minibuffer
-     (if shell-command-prompt-show-cwd
-         (format-message "%s%s"
-                         (abbreviate-file-name
-                          default-directory)
-                         shelldon-prompt-str)
-       shelldon-prompt-str)
-     nil shelldon-minibuffer-local-command-map nil
-     'shell-command-history
-     (let ((filename
-            (cond
-             (buffer-file-name)
-             ((eq major-mode 'dired-mode)
-              (dired-get-filename nil t)))))
-       (and filename (file-relative-name filename))))))
+   (list (minibuffer-with-setup-hook
+             (lambda ()
+               (shell-completion-vars)
+               (set (make-local-variable 'minibuffer-default-add-function)
+                    'minibuffer-default-add-shell-commands))
+           (let ((prompt (format-message "%s%s"
+                                         (abbreviate-file-name
+                                          default-directory)
+                                         shelldon-prompt-str))
+                 (initial-contents nil))
+             (read-from-minibuffer prompt initial-contents
+                                   shelldon-minibuffer-local-command-map
+                                   nil
+                                   'shell-command-history
+                                   (list (list (let ((filename
+                                                      (cond
+                                                       (buffer-file-name)
+                                                       ((eq major-mode 'dired-mode)
+                                                        (dired-get-filename nil t)))))
+                                                 (and filename (file-relative-name filename))))))))))
   ;; (when current-prefix-arg (setq output-buffer current-prefix-arg))
   ;; Look for a handler in case default-directory is a remote file name.
   (let* ((output-buffer (concat "*shelldon:" (number-to-string (length shelldon--hist)) ":" command "*"))
@@ -112,7 +116,7 @@ impose the use of a shell (with its need to quote arguments)."
         (let* ((buffer (get-buffer-create output-buffer))
                (proc (get-buffer-process buffer))
                (directory default-directory))
-	  (with-current-buffer buffer
+          (with-current-buffer buffer
             (shell-command-save-pos-or-erase)
 	    (setq default-directory directory)
 	    (let* ((process-environment
