@@ -112,7 +112,11 @@ impose the use of a shell (with its need to quote arguments)."
 				  'shell-command)))
     (add-to-list 'shelldon--hist `(,(concat (number-to-string (length shelldon--hist)) ":" command) . ,hidden-output-buffer))
     (if handler
-	(funcall handler 'shell-command command output-buffer error-buffer)
+	(progn
+	  (funcall handler 'shell-command command output-buffer error-buffer)
+	  (display-buffer output-buffer '(nil (allow-no-window . t)))
+	  (with-current-buffer output-buffer
+	    (shelldon-mode)))
       ;; Output goes in a separate buffer.
       ;; Preserve the match data in case called from a program.
       ;; FIXME: It'd be ridiculous for an Elisp function to call
