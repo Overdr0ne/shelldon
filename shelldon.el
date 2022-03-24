@@ -110,10 +110,10 @@ impose the use of a shell (with its need to quote arguments)."
          (error-buffer shell-command-default-error-buffer)
          (handler
 	  (find-file-name-handler (directory-file-name default-directory)
-				  'shell-command)))
+				  'shelldon-async-command)))
     (add-to-list 'shelldon--hist `(,(concat (number-to-string (length shelldon--hist)) ":" command) . ,hidden-output-buffer))
     (if handler
-	(funcall handler 'shell-command command output-buffer error-buffer)
+	(funcall handler 'shelldon-async-command command output-buffer error-buffer)
       ;; Output goes in a separate buffer.
       ;; Preserve the match data in case called from a program.
       ;; FIXME: It'd be ridiculous for an Elisp function to call
