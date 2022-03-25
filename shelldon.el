@@ -104,8 +104,7 @@ impose the use of a shell (with its need to quote arguments)."
    (list (shelldon--get-command)))
   ;; (when current-prefix-arg (setq output-buffer current-prefix-arg))
   ;; Look for a handler in case default-directory is a remote file name.
-  (let* ((command (concat command "&"))
-	 (output-buffer (concat "*shelldon:" (number-to-string (length shelldon--hist)) ":" command "*"))
+  (let* ((output-buffer (concat "*shelldon:" (number-to-string (length shelldon--hist)) ":" command "*"))
          (hidden-output-buffer (concat " " output-buffer))
          (error-buffer shell-command-default-error-buffer)
          (handler
