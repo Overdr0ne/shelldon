@@ -13,12 +13,32 @@ This is what I use for my main shell/terminal. It is largely just an enhancement
 * Installation
 I just use straight+use-package like so:
 #+begin_src elisp
-  (use-package shelldon
-    :straight (shelldon :type git
-                        :host github
-                        :repo "Overdr0ne/shelldon"
-                        :branch "master"
-                        :files ("shelldon.el")))
+    (use-package shelldon
+      :straight (shelldon :type git
+                          :host github
+                          :repo "Overdr0ne/shelldon"
+                          :branch "master"
+                          :files ("shelldon.el"))
+        ; below is the configuration I use, take what you want...
+        ; tell bash this shell is interactive
+        (setf shell-command-switch "-ic")
+        ; recursive minibuffers for nested autocompletion from minibuffer commands,
+        ; to e.g. interactively select from the kill-ring
+        (setf enable-recursive-minibuffers t)
+        ; comint output may contain SGR control sequences that may be translated into
+        ; text properties if emacs has something equivalent. This requires special
+        ; processing.
+        (add-hook 'shelldon-mode-hook 'ansi-color-for-comint-mode-on)
+        (add-to-list 'comint-output-filter-functions 'ansi-color-process-output)
+        (autoload 'ansi-color-for-comint-mode-on "ansi-color" nil t)
+        ; Tell Emacs how to display shelldon’s output buffers
+        (add-to-list 'display-buffer-alist
+                     '("*shelldon:"
+                       (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window display-buffer-pop-up-window)
+                       (side . right)
+                       (slot . 0)
+                       (window-width . 80)))
+  )
 #+end_src
 * Usage
 In a standard terminal, all command inputs and outputs are tangled together in one buffer. In Shelldon, each command is entered into the minibuffer individually with the *shelldon* command, much like an internal M-x command, and output is sent to a buffer derived from each command name. Here are the core commands.
