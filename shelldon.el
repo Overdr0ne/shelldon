@@ -137,7 +137,21 @@ impose the use of a shell (with its need to quote arguments)."
 	    ;; Use the comint filter for proper handling of
 	    ;; carriage motion (see comint-inhibit-carriage-motion).
             (set-process-filter proc #'comint-output-filter)
-	    (display-buffer buffer '(nil (allow-no-window . t)))
+            (if async-shell-command-display-buffer
+                ;; Display buffer immediately.
+                (display-buffer buffer '(nil (allow-no-window . t)))
+              ;; Defer displaying buffer until first process output.
+              ;; Use disposable named advice so that the buffer is
+              ;; displayed at most once per process lifetime.
+              (let ((nonce (make-symbol "nonce")))
+                (add-function :before (process-filter proc)
+                              (lambda (proc _string)
+                                (let ((buf (process-buffer proc)))
+                                  (when (buffer-live-p buf)
+                                    (remove-function (process-filter proc)
+                                                     nonce)
+                                    (display-buffer buf))))
+                              `((name . ,nonce)))))
             ;; FIXME: When the output buffer is hidden before the shell process is started,
             ;; ANSI colors are not displayed. I have no idea why.
             (rename-buffer hidden-output-buffer))))))
