@@ -64,6 +64,43 @@ context."
     map)
   "Keymap used for completing shell commands in minibuffer.")
 
+(defun shelldon-command-set-point-to-bob (&optional buffer)
+  "Set point in BUFFER after command complete.
+BUFFER is the output buffer of the command; if nil, then defaults
+to the current BUFFER.
+Set point to the `cdr' of the element in `shell-command-saved-pos'
+whose `car' is BUFFER."
+  (let* ((buf  (or buffer (current-buffer)))
+         (pos  (alist-get buf shell-command-saved-pos)))
+    (setq shell-command-saved-pos
+          (assq-delete-all buf shell-command-saved-pos))
+    (when (buffer-live-p buf)
+      (let ((win   (car (get-buffer-window-list buf)))
+            (pmax  (with-current-buffer buf (point-max))))
+
+        ;; Set point in the window displaying buf, if any; otherwise
+        ;; display buf temporary in selected frame and set the point.
+        (if win
+            (progn
+              (set-window-point win 0)
+              (with-selected-window win (fit-window-to-buffer)))
+          (when pos
+            (with-current-buffer buf (goto-char 0))
+            (with-selected-window win (fit-window-to-buffer)))
+          (save-window-excursion
+            (let ((win (display-buffer
+                        buf
+                        '(nil (inhibit-switch-frame . t)))))
+              (set-window-point win 0)
+              (with-selected-window win (fit-window-to-buffer))))))))
+  )
+(defun shelldon-command-sentinel (process signal)
+  (when (memq (process-status process) '(exit signal))
+    (shelldon-command-set-point-to-bob (process-buffer process))
+    (let ((status-string (format "%s: %s."
+                                 (car (cdr (cdr (process-command process))))
+                                 (substring signal 0 -1))))
+      (message status-string))))
 (defvar shelldon--hist '())
 (defun shelldon--get-command ()
   "Get command string from the user."
@@ -262,7 +299,7 @@ impose the use of a shell (with its need to quote arguments)."
                     (start-process-shell-command "Shell" buffer command)))
             (setq mode-line-process '(":%s"))
             (shelldon-mode)
-            (set-process-sentinel proc #'shell-command-sentinel)
+            (set-process-sentinel proc #'shelldon-command-sentinel)
             ;; Use the comint filter for proper handling of
             ;; carriage motion (see comint-inhibit-carriage-motion).
             (set-process-filter proc #'comint-output-filter)
