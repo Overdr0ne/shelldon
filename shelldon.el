@@ -89,6 +89,135 @@ context."
                                       ((eq major-mode 'dired-mode)
                                        (dired-get-filename nil t)))))
                                 (and filename (file-relative-name filename)))))))))
+(defvar shelldon--kill-output nil)
+
+(defun shelldon-command (command &optional output-buffer error-buffer)
+  "Execute string COMMAND in inferior shell; display output, if any.
+With prefix argument, insert the COMMAND's output at point.
+
+This is function is largely just copy-pasted from the built-in
+`shell-command’, with some minor modifications.
+
+Interactively, prompt for COMMAND in the minibuffer.
+If `shell-command-prompt-show-cwd' is non-nil, show the current
+directory in the prompt.
+
+Otherwise, COMMAND is executed synchronously.  The output appears in
+the buffer named by `shell-command-buffer-name'.  If the output is
+short enough to display in the echo area (which is determined by the
+variables `resize-mini-windows' and `max-mini-window-height'), it is
+shown there, but it is nonetheless available in buffer named by
+`shell-command-buffer-name' even though that buffer is not
+automatically displayed.
+
+To specify a coding system for converting non-ASCII characters
+in the shell command output, use \\[universal-coding-system-argument] \
+before this command.
+
+Noninteractive callers can specify coding systems by binding
+`coding-system-for-read' and `coding-system-for-write'.
+
+The optional second argument OUTPUT-BUFFER, if non-nil,
+says to put the output in some other buffer.
+If OUTPUT-BUFFER is a buffer or buffer name, erase that buffer
+and insert the output there; a non-nil value of
+`shell-command-dont-erase-buffer' prevents the buffer from being
+erased.  If OUTPUT-BUFFER is not a buffer and not nil (which happens
+interactively when the prefix argument is given), insert the
+output in current buffer after point leaving mark after it.  This
+cannot be done asynchronously.
+
+If OUTPUT-BUFFER is a buffer or buffer name different from the
+current buffer, instead of outputting at point in that buffer,
+the output will be appended at the end of that buffer.
+
+The user option `shell-command-dont-erase-buffer', which see, controls
+whether the output buffer is erased and where to put point after
+the shell command.
+
+If the command terminates without error, but generates output,
+and you did not specify \"insert it in the current buffer\",
+the output can be displayed in the echo area or in its buffer.
+If the output is short enough to display in the echo area
+\(determined by the variable `max-mini-window-height' if
+`resize-mini-windows' is non-nil), it is shown there.
+Otherwise, the buffer containing the output is displayed.
+Note that if `shell-command-dont-erase-buffer' is non-nil,
+the echo area could display more than just the output of the
+last command.
+
+If there is output and an error, and you did not specify \"insert it
+in the current buffer\", a message about the error goes at the end
+of the output.
+
+If the optional third argument ERROR-BUFFER is non-nil, it is a buffer
+or buffer name to which to direct the command's standard error output.
+If it is nil, error output is mingled with regular output.
+In an interactive call, the variable `shell-command-default-error-buffer'
+specifies the value of ERROR-BUFFER.
+
+In Elisp, you will often be better served by calling `call-process' or
+`start-process' directly, since they offer more control and do not
+impose the use of a shell (with its need to quote arguments)."
+
+  ;; Look for a handler in case default-directory is a remote file name.
+  (let* ((output-buffer (concat "*shelldon:" (number-to-string (length shelldon--hist)) ":" command "*"))
+         (hidden-output-buffer (concat " " output-buffer))
+         (error-buffer shell-command-default-error-buffer)
+         (handler
+	        (find-file-name-handler (directory-file-name default-directory)
+				                          'shell-command)))
+    (add-to-list 'shelldon--hist `(,(concat (number-to-string (length shelldon--hist)) ":" command) . ,hidden-output-buffer))
+    (if handler
+	      (funcall handler 'shell-command command output-buffer error-buffer)
+      (if (and output-buffer
+               (or (eq output-buffer (current-buffer))
+                   (and (stringp output-buffer) (eq (get-buffer output-buffer) (current-buffer)))
+	                 (not (or (bufferp output-buffer) (stringp output-buffer))))) ; Bug#39067
+	        ;; Synchronous command with output in current buffer.
+	        (let ((error-file
+                 (and error-buffer
+                      (make-temp-file
+                       (expand-file-name "scor"
+                                         (or small-temporary-file-directory
+                                             temporary-file-directory))))))
+	          (barf-if-buffer-read-only)
+	          (push-mark nil t)
+            (shell-command-save-pos-or-erase 'output-to-current-buffer)
+	          ;; We do not use -f for csh; we will not support broken use of
+	          ;; .cshrcs.  Even the BSD csh manual says to use
+	          ;; "if ($?prompt) exit" before things that are not useful
+	          ;; non-interactively.  Besides, if someone wants their other
+	          ;; aliases for shell commands then they can still have them.
+            (call-process-shell-command command nil (if error-file
+                                                        (list t error-file)
+                                                      t))
+	          (when (and error-file (file-exists-p error-file))
+              (when (< 0 (file-attribute-size (file-attributes error-file)))
+                (with-current-buffer (get-buffer-create error-buffer)
+                  (let ((pos-from-end (- (point-max) (point))))
+                    (or (bobp)
+                        (insert "\f\n"))
+                    ;; Do no formatting while reading error file,
+                    ;; because that can run a shell command, and we
+                    ;; don't want that to cause an infinite recursion.
+                    (format-insert-file error-file nil)
+                    ;; Put point after the inserted errors.
+                    (goto-char (- (point-max) pos-from-end)))
+                  (display-buffer (current-buffer))
+                  ))
+	            (delete-file error-file))
+	          ;; This is like exchange-point-and-mark, but doesn't
+	          ;; activate the mark.  It is cleaner to avoid activation,
+	          ;; even though the command loop would deactivate the mark
+	          ;; because we inserted text.
+	          (goto-char (prog1 (mark t)
+			                   (set-marker (mark-marker) (point)
+				                             (current-buffer)))))
+	      ;; Otherwise, command is executed synchronously.
+	      (shell-command-on-region (point) (point) command
+				                         output-buffer nil error-buffer)))))
+
 (defun shelldon-async-command (command)
   "Execute string COMMAND in inferior shell; display output, if any.
 With prefix argument, insert the COMMAND's output at point.
@@ -162,7 +291,42 @@ impose the use of a shell (with its need to quote arguments)."
   (view-mode +1))
 
 ;;;###autoload
-(defun shelldon ()
+(defun shelldon (command &optional output-buffer error-buffer)
+  "Execute given asynchronously in the minibuffer with output history.
+
+If the user tries to change the workdir while the command is executing, catch
+the change and re-execute in the new context."
+  (interactive
+   (list
+    (shelldon--get-command)
+    current-prefix-arg
+    shell-command-default-error-buffer))
+  (let ((rtn t))
+    (while rtn
+      (setq rtn (catch 'shelldon-cwd
+                  (shelldon-command command
+                                    (if output-buffer output-buffer nil)
+                                    (if error-buffer error-buffer nil))))
+      (when rtn
+        (setq default-directory rtn)
+        (setq list-buffers-directory rtn)))))
+
+(defun shelldon-kill-output (command &optional output-buffer error-buffer)
+  "Execute COMMAND and copy output as kill.
+
+Also send output to OUTPUT-BUFFER and ERROR-BUFFER."
+  (interactive
+   (list
+    (shelldon--get-command)
+    current-prefix-arg
+    shell-command-default-error-buffer))
+  (shelldon-command command
+                    (if output-buffer output-buffer nil)
+                    (if error-buffer error-buffer nil))
+  (kill-new (with-current-buffer (string-trim (cdr (car shelldon--hist)))
+              (buffer-string ))))
+
+(defun shelldon-async ()
   "Execute given asynchronously in the minibuffer with output history.
 
 If the user tries to change the workdir while the command is executing, catch
@@ -179,7 +343,7 @@ the change and re-execute in the new context."
 (defun shelldon-loop ()
   "Loops the shelldon command to more closely emulate a terminal."
   (interactive)
-  (cl-loop (call-interactively #'shelldon)))
+  (cl-loop (call-interactively #'shelldon-async)))
 
 ;;;###autoload
 (defun shelldon-output-history ()
