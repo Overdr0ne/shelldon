@@ -237,11 +237,11 @@ impose the use of a shell (with its need to quote arguments)."
          (hidden-output-buffer (concat " " output-buffer))
          (error-buffer shell-command-default-error-buffer)
          (handler
-	      (find-file-name-handler (directory-file-name default-directory)
-				                  'shelldon-async-command)))
+          (find-file-name-handler (directory-file-name default-directory)
+                                  'shelldon-async-command)))
     (add-to-list 'shelldon--hist `(,(concat (number-to-string (length shelldon--hist)) ":" command) . ,hidden-output-buffer))
     (if handler
-	    (funcall handler 'shelldon-async-command command output-buffer error-buffer)
+        (funcall handler 'shelldon-async-command command output-buffer error-buffer)
       ;; Output goes in a separate buffer.
       ;; Preserve the match data in case called from a program.
       ;; FIXME: It'd be ridiculous for an Elisp function to call
@@ -251,20 +251,20 @@ impose the use of a shell (with its need to quote arguments)."
                (proc (get-buffer-process buffer)))
           (with-current-buffer buffer
             (shell-command-save-pos-or-erase)
-	        (let* ((process-environment
+            (let* ((process-environment
                     (nconc
                      (list
                       (format "TERM=%s" (if shelldon-ansi-colors "eterm-color" "dumb"))
                       (format "TERMINFO=%s" data-directory)
                       (format "INSIDE_EMACS=%s" emacs-version))
                      process-environment)))
-	          (setq proc
-		            (start-process-shell-command "Shell" buffer command)))
-	        (setq mode-line-process '(":%s"))
-	        (shelldon-mode)
+              (setq proc
+                    (start-process-shell-command "Shell" buffer command)))
+            (setq mode-line-process '(":%s"))
+            (shelldon-mode)
             (set-process-sentinel proc #'shell-command-sentinel)
-	        ;; Use the comint filter for proper handling of
-	        ;; carriage motion (see comint-inhibit-carriage-motion).
+            ;; Use the comint filter for proper handling of
+            ;; carriage motion (see comint-inhibit-carriage-motion).
             (set-process-filter proc #'comint-output-filter)
             (if async-shell-command-display-buffer
                 ;; Display buffer immediately.
@@ -354,12 +354,12 @@ the change and re-execute in the new context."
   "shelldon--hist is deprecated, use shelldon-output-history")
 
 (add-to-list 'display-buffer-alist
-	         `("*\\(shelldon.*\\)"
-	           (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window)
-	           (side . right)
-	           (slot . 0)
-	           (window-width . 80)
-	           (reusable-frames . visible)))
+             `("*\\(shelldon.*\\)"
+               (display-buffer-reuse-window display-buffer-in-previous-window display-buffer-in-side-window)
+               (side . right)
+               (slot . 0)
+               (window-width . 80)
+               (reusable-frames . visible)))
 
 ;;;###autoload
 (defun shelldon-send-line-at-point ()
