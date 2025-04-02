@@ -5,7 +5,7 @@
 ;; Author: overdr0ne <scmorris.dev@gmail.com>
 ;; Version: 1.0
 ;; URL: https://github.com/Overdr0ne/shelldon
-;; Package-Requires: ((emacs "27.1"))
+;; Package-Requires: ((emacs "27.1") (exec-path-from-shell))
 ;; Keywords: tools, convenience
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -43,9 +43,37 @@
   "A string prepending the shelldon prompt, much like the PS1 EV in BASH."
   :type 'editable-field)
 
+(defcustom shelldon-autohistory-p nil
+  "Set to t to automatically complete history for shelldon commands."
+  :type 'toggle)
+
 (defcustom shelldon-ansi-colors nil
   "Toggle ANSI color output on shelldon’s output."
   :type 'toggle)
+
+(defcustom shelldon-command-auto-load-history-p t
+  "Set to t to automatically complete history for shelldon commands."
+  :type 'toggle)
+
+(defun shelldon-slurp (f)
+  (with-temp-buffer
+    (insert-file-contents f)
+    (buffer-substring-no-properties
+     (point-min)
+     (point-max))))
+
+(defun shelldon-command-history-to-list ()
+  (seq-filter (lambda (str)
+                (string-match-p "[A-z].*" str))
+              (split-string (shelldon-slurp (getenv "HISTFILE")) "\n")))
+
+(defun shelldon-command-auto-history ()
+  (if shelldon-command-auto-load-history-p
+      (shelldon-command-history-to-list)))
+
+;; (defvar shelldon-command-history (or (shelldon-command-auto-history)
+;;                                      shell))
+(defvar shelldon-command-history (shelldon-command-auto-history))
 
 (defun shelldon-cd ()
   "Change directories without leaving shelldon context.
@@ -109,12 +137,26 @@ whose `car' is BUFFER."
         (shell-completion-vars)
         (set (make-local-variable 'minibuffer-default-add-function)
              'minibuffer-default-add-shell-commands))
-    (let ((prompt (format-message "%s%s"
-                                  (abbreviate-file-name
-                                   default-directory)
-                                  shelldon-prompt-str))
-          (initial-contents nil))
-      (completing-read prompt shell-command-history nil nil initial-contents 'shell-command-history))))
+    (let* ((prompt (format-message "%s%s"
+                                   (abbreviate-file-name
+                                    default-directory)
+                                   shelldon-prompt-str))
+           (initial-contents nil)
+           (command (if shelldon-autohistory-p
+                        (completing-read prompt shelldon-command-history nil nil initial-contents 'shelldon-command-history)
+                      (read-from-minibuffer prompt initial-contents
+                                            shelldon-minibuffer-local-command-map
+                                            nil
+                                            'shelldon-command-history
+                                            (list
+                                             (list
+                                              (let ((filename
+                                                     (cond
+                                                      (buffer-file-name)
+                                                      ((eq major-mode 'dired-mode)
+                                                       (dired-get-filename nil t)))))
+                                                (and filename (file-relative-name filename)))))))))
+       command)))
 (defvar shelldon--kill-output nil)
 
 (defun shelldon-command (command &optional output-buffer error-buffer)
