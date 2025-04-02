@@ -114,18 +114,7 @@ whose `car' is BUFFER."
                                    default-directory)
                                   shelldon-prompt-str))
           (initial-contents nil))
-      (read-from-minibuffer prompt initial-contents
-                            shelldon-minibuffer-local-command-map
-                            nil
-                            'shell-command-history
-                            (list
-                             (list
-                              (let ((filename
-                                     (cond
-                                      (buffer-file-name)
-                                      ((eq major-mode 'dired-mode)
-                                       (dired-get-filename nil t)))))
-                                (and filename (file-relative-name filename)))))))))
+      (completing-read prompt shell-command-history nil nil initial-contents 'shell-command-history))))
 (defvar shelldon--kill-output nil)
 
 (defun shelldon-command (command &optional output-buffer error-buffer)
