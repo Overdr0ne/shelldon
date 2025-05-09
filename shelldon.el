@@ -103,8 +103,7 @@ whose `car' is BUFFER."
     (setq shell-command-saved-pos
           (assq-delete-all buf shell-command-saved-pos))
     (when (buffer-live-p buf)
-      (let ((win   (car (get-buffer-window-list buf)))
-            (pmax  (with-current-buffer buf (point-max))))
+      (let ((win   (car (get-buffer-window-list buf))))
 
         ;; Set point in the window displaying buf, if any; otherwise
         ;; display buf temporary in selected frame and set the point.
@@ -122,12 +121,27 @@ whose `car' is BUFFER."
               (set-window-point win 0)
               (with-selected-window win (fit-window-to-buffer))))))))
   )
+
+(defun shelldon-on-action-function (_ key)
+  (pop-to-buffer key)
+  )
+
+(defun shelldon-on-close-function (_ _)
+  )
+
 (defun shelldon-command-sentinel (process signal)
   (when (memq (process-status process) '(exit signal))
     (shelldon-command-set-point-to-bob (process-buffer process))
     (let ((status-string (format "%s: %s."
                                  (car (cdr (cdr (process-command process))))
-                                 (substring signal 0 -1))))
+                                 (substring signal 0 -1)))
+          (bname (buffer-name (process-buffer process))))
+      (notifications-notify
+       :title status-string
+       :body "Open the output buffer?"
+       :actions `(,bname "Jump to output")
+       :on-action 'shelldon-on-action-function
+       :on-close 'shelldon-on-close-function)
       (message status-string))))
 (defvar shelldon--hist '())
 (defun shelldon--get-command ()
@@ -156,7 +170,7 @@ whose `car' is BUFFER."
                                                       ((eq major-mode 'dired-mode)
                                                        (dired-get-filename nil t)))))
                                                 (and filename (file-relative-name filename)))))))))
-       command)))
+      command)))
 (defvar shelldon--kill-output nil)
 
 (defun shelldon-command (command &optional output-buffer error-buffer)
