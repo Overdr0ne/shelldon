@@ -174,9 +174,9 @@ whose `car' is BUFFER."
 (defvar shelldon--kill-output nil)
 
 (defun shelldon-command-on-region (start end command
-				      &optional output-buffer replace
-				      error-buffer display-error-buffer
-				      region-noncontiguous-p)
+				                                 &optional output-buffer replace
+				                                 error-buffer display-error-buffer
+				                                 region-noncontiguous-p)
   "Execute string COMMAND in inferior shell with region as input.
 Normally display output (if any) in temp buffer specified
 by `shell-command-buffer-name'; prefix arg means replace the region
@@ -233,29 +233,29 @@ noncontiguous pieces.  The most common example of this is a
 rectangular region, where the pieces are separated by newline
 characters."
   (interactive (let (string)
-		 (unless (mark)
-		   (user-error "The mark is not set now, so there is no region"))
-		 ;; Do this before calling region-beginning
-		 ;; and region-end, in case subprocess output
-		 ;; relocates them while we are in the minibuffer.
-		 (setq string (read-shell-command "Shell command on region: "))
-		 ;; call-interactively recognizes region-beginning and
-		 ;; region-end specially, leaving them in the history.
-		 (list (region-beginning) (region-end)
-		       string
-		       current-prefix-arg
-		       current-prefix-arg
-		       shell-command-default-error-buffer
-		       t
-		       (region-noncontiguous-p))))
+		             (unless (mark)
+		               (user-error "The mark is not set now, so there is no region"))
+		             ;; Do this before calling region-beginning
+		             ;; and region-end, in case subprocess output
+		             ;; relocates them while we are in the minibuffer.
+		             (setq string (read-shell-command "Shell command on region: "))
+		             ;; call-interactively recognizes region-beginning and
+		             ;; region-end specially, leaving them in the history.
+		             (list (region-beginning) (region-end)
+		                   string
+		                   current-prefix-arg
+		                   current-prefix-arg
+		                   shell-command-default-error-buffer
+		                   t
+		                   (region-noncontiguous-p))))
   (let ((error-file
-	 (if error-buffer
-	     (make-temp-file
-	      (expand-file-name "scor"
-				(or small-temporary-file-directory
-				    temporary-file-directory)))
-	   nil))
-	exit-status)
+	       (if error-buffer
+	           (make-temp-file
+	            (expand-file-name "scor"
+				                        (or small-temporary-file-directory
+				                            temporary-file-directory)))
+	         nil))
+	      exit-status)
     ;; Unless a single contiguous chunk is selected, operate on multiple chunks.
     (if region-noncontiguous-p
         (let ((input (concat (funcall region-extract-function (when replace 'delete)) "\n"))
@@ -296,9 +296,9 @@ characters."
               (push-mark (point) 'nomsg))
             (setq exit-status
                   (call-shell-region start end command replace
-                                       (if error-file
-                                           (list t error-file)
-                                         t)))
+                                     (if error-file
+                                         (list t error-file)
+                                       t)))
             ;; It is rude to delete a buffer that the command is not using.
             ;; (let ((shell-buffer (get-buffer shell-command-buffer-name)))
             ;;   (and shell-buffer (not (eq shell-buffer (current-buffer)))
@@ -341,9 +341,9 @@ characters."
                     (shell-command-save-pos-or-erase)))
                 (setq exit-status
                       (call-shell-region start end command nil
-                                           (if error-file
-                                               (list buffer error-file)
-                                             buffer))))
+                                         (if error-file
+                                             (list buffer error-file)
+                                           buffer))))
             ;; Report the output.
             (with-current-buffer buffer
               (setq-local revert-buffer-function
@@ -361,11 +361,11 @@ characters."
                 (progn
                   (display-message-or-buffer buffer)
                   (shell-command-set-point-after-cmd buffer))
-            ;; No output; error?
+              ;; No output; error?
               (let ((output
                      (if (and error-file
                               (< 0 (file-attribute-size
-				    (file-attributes error-file))))
+				                            (file-attributes error-file))))
                          (format "some error output%s"
                                  (if shell-command-default-error-buffer
                                      (format " to the \"%s\" buffer"
@@ -389,17 +389,17 @@ characters."
 
     (when (and error-file (file-exists-p error-file))
       (if (< 0 (file-attribute-size (file-attributes error-file)))
-	  (with-current-buffer (get-buffer-create error-buffer)
+	        (with-current-buffer (get-buffer-create error-buffer)
             (goto-char (point-max))
             ;; Insert a separator if there's already text here.
-	    (unless (bobp)
-	      (insert "\f\n"))
-	    ;; Do no formatting while reading error file,
-	    ;; because that can run a shell command, and we
-	    ;; don't want that to cause an infinite recursion.
-	    (format-insert-file error-file nil)
-	    (and display-error-buffer
-		 (display-buffer (current-buffer)))))
+	          (unless (bobp)
+	            (insert "\f\n"))
+	          ;; Do no formatting while reading error file,
+	          ;; because that can run a shell command, and we
+	          ;; don't want that to cause an infinite recursion.
+	          (format-insert-file error-file nil)
+	          (and display-error-buffer
+		             (display-buffer (current-buffer)))))
       (delete-file error-file))
     exit-status))
 
@@ -528,7 +528,7 @@ impose the use of a shell (with its need to quote arguments)."
 				                             (current-buffer)))))
 	      ;; Otherwise, command is executed synchronously.
 	      (shelldon-command-on-region (point) (point) command
-				                         output-buffer nil error-buffer)))))
+				                            output-buffer nil error-buffer)))))
 
 (defun shelldon-async-command (command)
   "Execute string COMMAND in inferior shell; display output, if any.
