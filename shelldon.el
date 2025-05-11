@@ -173,6 +173,37 @@ whose `car' is BUFFER."
       command)))
 (defvar shelldon--kill-output nil)
 
+(defun shelldon--command-on-region-noncontiguous (start end command
+                                                        &optional output-buffer replace)
+  (let ((input (concat (funcall region-extract-function
+                                (when replace 'delete))
+                       "\n"))
+        output)
+    (with-temp-buffer
+      (insert input)
+      (call-process-region (point-min) (point-max)
+                           shell-file-name t t
+                           nil shell-command-switch
+                           command)
+      (setq output (split-string (buffer-substring
+                                  (point-min)
+                                  ;; Trim the trailing newline.
+                                  (if (eq (char-before (point-max)) ?\n)
+                                      (1- (point-max))
+                                    (point-max)))
+                                 "\n")))
+    (cond
+     (replace
+      (goto-char start)
+      (funcall region-insert-function output))
+     (t
+      (let ((buffer (get-buffer-create
+                     (or output-buffer shell-command-buffer-name))))
+        (with-current-buffer buffer
+          (erase-buffer)
+          (funcall region-insert-function output))
+        (display-message-or-buffer buffer))))))
+
 (defun shelldon-command-on-region (start end command
 				                                 &optional output-buffer replace
 				                                 error-buffer display-error-buffer
@@ -258,32 +289,8 @@ characters."
 	      exit-status)
     ;; Unless a single contiguous chunk is selected, operate on multiple chunks.
     (if region-noncontiguous-p
-        (let ((input (concat (funcall region-extract-function (when replace 'delete)) "\n"))
-              output)
-          (with-temp-buffer
-            (insert input)
-            (call-process-region (point-min) (point-max)
-                                 shell-file-name t t
-                                 nil shell-command-switch
-                                 command)
-            (setq output (split-string (buffer-substring
-                                        (point-min)
-                                        ;; Trim the trailing newline.
-                                        (if (eq (char-before (point-max)) ?\n)
-                                            (1- (point-max))
-                                          (point-max)))
-                                       "\n")))
-          (cond
-           (replace
-            (goto-char start)
-            (funcall region-insert-function output))
-           (t
-            (let ((buffer (get-buffer-create
-                           (or output-buffer shell-command-buffer-name))))
-              (with-current-buffer buffer
-                (erase-buffer)
-                (funcall region-insert-function output))
-              (display-message-or-buffer buffer)))))
+        (shelldon--command-on-region-noncontiguous start end command
+                                                   output-buffer replace)
       (if (or replace
               (and output-buffer
                    (not (or (bufferp output-buffer) (stringp output-buffer)))))
@@ -403,6 +410,53 @@ characters."
       (delete-file error-file))
     exit-status))
 
+(defun shelldon--output-current-buffer-p (output-buffer)
+  (and output-buffer
+       (or (eq output-buffer (current-buffer))
+           (and (stringp output-buffer) (eq (get-buffer output-buffer) (current-buffer)))
+	         (not (or (bufferp output-buffer) (stringp output-buffer))))))
+
+(defun shelldon--output-current-buffer (command output-buffer error-buffer)
+  (let ((error-file
+         (and error-buffer
+              (make-temp-file
+               (expand-file-name "scor"
+                                 (or small-temporary-file-directory
+                                     temporary-file-directory))))))
+	  (barf-if-buffer-read-only)
+	  (push-mark nil t)
+    (shell-command-save-pos-or-erase 'output-to-current-buffer)
+	  ;; We do not use -f for csh; we will not support broken use of
+	  ;; .cshrcs.  Even the BSD csh manual says to use
+	  ;; "if ($?prompt) exit" before things that are not useful
+	  ;; non-interactively.  Besides, if someone wants their other
+	  ;; aliases for shell commands then they can still have them.
+    (call-process-shell-command command nil (if error-file
+                                                (list t error-file)
+                                              t))
+	  (when (and error-file (file-exists-p error-file))
+      (when (< 0 (file-attribute-size (file-attributes error-file)))
+        (with-current-buffer (get-buffer-create error-buffer)
+          (let ((pos-from-end (- (point-max) (point))))
+            (or (bobp)
+                (insert "\f\n"))
+            ;; Do no formatting while reading error file,
+            ;; because that can run a shell command, and we
+            ;; don't want that to cause an infinite recursion.
+            (format-insert-file error-file nil)
+            ;; Put point after the inserted errors.
+            (goto-char (- (point-max) pos-from-end)))
+          (display-buffer (current-buffer))
+          ))
+	    (delete-file error-file))
+	  ;; This is like exchange-point-and-mark, but doesn't
+	  ;; activate the mark.  It is cleaner to avoid activation,
+	  ;; even though the command loop would deactivate the mark
+	  ;; because we inserted text.
+	  (goto-char (prog1 (mark t)
+			           (set-marker (mark-marker) (point)
+				                     (current-buffer))))))
+
 (defun shelldon-command (command &optional output-buffer error-buffer)
   "Execute string COMMAND in inferior shell; display output, if any.
 With prefix argument, insert the COMMAND's output at point.
@@ -482,51 +536,8 @@ impose the use of a shell (with its need to quote arguments)."
     (add-to-list 'shelldon--hist `(,(concat (number-to-string (length shelldon--hist)) ":" command) . ,hidden-output-buffer))
     (if handler
 	      (funcall handler 'shelldon-command command output-buffer error-buffer)
-      (if (and output-buffer
-               (or (eq output-buffer (current-buffer))
-                   (and (stringp output-buffer) (eq (get-buffer output-buffer) (current-buffer)))
-	                 (not (or (bufferp output-buffer) (stringp output-buffer))))) ; Bug#39067
-	        ;; Synchronous command with output in current buffer.
-	        (let ((error-file
-                 (and error-buffer
-                      (make-temp-file
-                       (expand-file-name "scor"
-                                         (or small-temporary-file-directory
-                                             temporary-file-directory))))))
-	          (barf-if-buffer-read-only)
-	          (push-mark nil t)
-            (shell-command-save-pos-or-erase 'output-to-current-buffer)
-	          ;; We do not use -f for csh; we will not support broken use of
-	          ;; .cshrcs.  Even the BSD csh manual says to use
-	          ;; "if ($?prompt) exit" before things that are not useful
-	          ;; non-interactively.  Besides, if someone wants their other
-	          ;; aliases for shell commands then they can still have them.
-            (call-process-shell-command command nil (if error-file
-                                                        (list t error-file)
-                                                      t))
-	          (when (and error-file (file-exists-p error-file))
-              (when (< 0 (file-attribute-size (file-attributes error-file)))
-                (with-current-buffer (get-buffer-create error-buffer)
-                  (let ((pos-from-end (- (point-max) (point))))
-                    (or (bobp)
-                        (insert "\f\n"))
-                    ;; Do no formatting while reading error file,
-                    ;; because that can run a shell command, and we
-                    ;; don't want that to cause an infinite recursion.
-                    (format-insert-file error-file nil)
-                    ;; Put point after the inserted errors.
-                    (goto-char (- (point-max) pos-from-end)))
-                  (display-buffer (current-buffer))
-                  ))
-	            (delete-file error-file))
-	          ;; This is like exchange-point-and-mark, but doesn't
-	          ;; activate the mark.  It is cleaner to avoid activation,
-	          ;; even though the command loop would deactivate the mark
-	          ;; because we inserted text.
-	          (goto-char (prog1 (mark t)
-			                   (set-marker (mark-marker) (point)
-				                             (current-buffer)))))
-	      ;; Otherwise, command is executed synchronously.
+      (if (shelldon--output-current-buffer-p output-buffer)
+          (shelldon--output-current-buffer command output-buffer error-buffer)
 	      (shelldon-command-on-region (point) (point) command
 				                            output-buffer nil error-buffer)))))
 
