@@ -204,6 +204,108 @@ whose `car' is BUFFER."
           (funcall region-insert-function output))
         (display-message-or-buffer buffer))))))
 
+(defun shelldon--command-replace-region-contiguous ()
+  (let ((swap (and replace (< start end))))
+    ;; Don't muck with mark unless REPLACE says we should.
+    (goto-char start)
+    (when (and replace
+               (not (eq replace 'no-mark)))
+      (push-mark (point) 'nomsg))
+    (setq exit-status
+          (call-shell-region start end command replace
+                             (if error-file
+                                 (list t error-file)
+                               t)))
+    ;; It is rude to delete a buffer that the command is not using.
+    ;; (let ((shell-buffer (get-buffer shell-command-buffer-name)))
+    ;;   (and shell-buffer (not (eq shell-buffer (current-buffer)))
+    ;; 	 (kill-buffer shell-buffer)))
+    ;; Don't muck with mark unless REPLACE says we should.
+    (when (and replace swap
+               (not (eq replace 'no-mark)))
+      (exchange-point-and-mark))))
+
+(defun shelldon--command-output-to-buffer (start end command
+				                                         &optional output-buffer replace
+				                                         error-file)
+  (let ((buffer (get-buffer-create
+                 (or output-buffer shell-command-buffer-name))))
+    (set-buffer-major-mode buffer) ; Enable globalized modes (bug#38111)
+    (unwind-protect
+        (if (and (eq buffer (current-buffer))
+                 (or (memq shell-command-dont-erase-buffer '(nil erase))
+                     (and (not (eq buffer (get-buffer
+                                           shell-command-buffer-name)))
+                          (not (region-active-p)))))
+            ;; If the input is the same buffer as the output,
+            ;; delete everything but the specified region,
+            ;; then replace that region with the output.
+            (progn (setq buffer-read-only nil)
+                   (delete-region (max start end) (point-max))
+                   (delete-region (point-min) (min start end))
+                   (setq exit-status
+                         (call-process-region (point-min) (point-max)
+                                              shell-file-name t
+                                              (if error-file
+                                                  (list t error-file)
+                                                t)
+                                              nil shell-command-switch
+                                              command)))
+          ;; Clear the output buffer, then run the command with
+          ;; output there.
+          (let ((directory default-directory))
+            (with-current-buffer buffer
+              (if (not output-buffer)
+                  (setq default-directory directory))
+              (shell-command-save-pos-or-erase)))
+          (setq exit-status
+                (call-shell-region start end command nil
+                                   (if error-file
+                                       (list buffer error-file)
+                                     buffer))))
+      ;; Report the output.
+      (with-current-buffer buffer
+        (setq-local revert-buffer-function
+                    (lambda (&rest _)
+                      (shelldon-command command)))
+        (setq mode-line-process
+              (cond ((null exit-status)
+                     " - Error")
+                    ((stringp exit-status)
+                     (format " - Signal [%s]" exit-status))
+                    ((not (equal 0 exit-status))
+                     (format " - Exit [%d]" exit-status)))))
+      (if (with-current-buffer buffer (> (point-max) (point-min)))
+          ;; There's some output, display it
+          (progn
+            (display-message-or-buffer buffer)
+            (shell-command-set-point-after-cmd buffer))
+        ;; No output; error?
+        (let ((output
+               (if (and error-file
+                        (< 0 (file-attribute-size
+				                      (file-attributes error-file))))
+                   (format "some error output%s"
+                           (if shell-command-default-error-buffer
+                               (format " to the \"%s\" buffer"
+                                       shell-command-default-error-buffer)
+                             ""))
+                 "no output")))
+          (cond ((null exit-status)
+                 (message "(Shell command failed with error)"))
+                ((equal 0 exit-status)
+                 (message "(Shell command succeeded with %s)"
+                          output))
+                ((stringp exit-status)
+                 (message "(Shell command killed by signal %s)"
+                          exit-status))
+                (t
+                 (message "(Shell command failed with code %d and %s)"
+                          exit-status output))))
+        ;; Don't kill: there might be useful info in the undo-log.
+        ;; (kill-buffer buffer)
+        ))))
+
 (defun shelldon-command-on-region (start end command
 				                                 &optional output-buffer replace
 				                                 error-buffer display-error-buffer
@@ -295,104 +397,12 @@ characters."
               (and output-buffer
                    (not (or (bufferp output-buffer) (stringp output-buffer)))))
           ;; Replace specified region with output from command.
-          (let ((swap (and replace (< start end))))
-            ;; Don't muck with mark unless REPLACE says we should.
-            (goto-char start)
-            (when (and replace
-                       (not (eq replace 'no-mark)))
-              (push-mark (point) 'nomsg))
-            (setq exit-status
-                  (call-shell-region start end command replace
-                                     (if error-file
-                                         (list t error-file)
-                                       t)))
-            ;; It is rude to delete a buffer that the command is not using.
-            ;; (let ((shell-buffer (get-buffer shell-command-buffer-name)))
-            ;;   (and shell-buffer (not (eq shell-buffer (current-buffer)))
-            ;; 	 (kill-buffer shell-buffer)))
-            ;; Don't muck with mark unless REPLACE says we should.
-            (when (and replace swap
-                       (not (eq replace 'no-mark)))
-              (exchange-point-and-mark)))
+          (shelldon--command-replace-region-contiguous)
         ;; No prefix argument: put the output in a temp buffer,
         ;; replacing its entire contents.
-        (let ((buffer (get-buffer-create
-                       (or output-buffer shell-command-buffer-name))))
-          (set-buffer-major-mode buffer) ; Enable globalized modes (bug#38111)
-          (unwind-protect
-              (if (and (eq buffer (current-buffer))
-                       (or (memq shell-command-dont-erase-buffer '(nil erase))
-                           (and (not (eq buffer (get-buffer
-                                                 shell-command-buffer-name)))
-                                (not (region-active-p)))))
-                  ;; If the input is the same buffer as the output,
-                  ;; delete everything but the specified region,
-                  ;; then replace that region with the output.
-                  (progn (setq buffer-read-only nil)
-                         (delete-region (max start end) (point-max))
-                         (delete-region (point-min) (min start end))
-                         (setq exit-status
-                               (call-process-region (point-min) (point-max)
-                                                    shell-file-name t
-                                                    (if error-file
-                                                        (list t error-file)
-                                                      t)
-                                                    nil shell-command-switch
-                                                    command)))
-                ;; Clear the output buffer, then run the command with
-                ;; output there.
-                (let ((directory default-directory))
-                  (with-current-buffer buffer
-                    (if (not output-buffer)
-                        (setq default-directory directory))
-                    (shell-command-save-pos-or-erase)))
-                (setq exit-status
-                      (call-shell-region start end command nil
-                                         (if error-file
-                                             (list buffer error-file)
-                                           buffer))))
-            ;; Report the output.
-            (with-current-buffer buffer
-              (setq-local revert-buffer-function
-                          (lambda (&rest _)
-                            (shelldon-command command)))
-              (setq mode-line-process
-                    (cond ((null exit-status)
-                           " - Error")
-                          ((stringp exit-status)
-                           (format " - Signal [%s]" exit-status))
-                          ((not (equal 0 exit-status))
-                           (format " - Exit [%d]" exit-status)))))
-            (if (with-current-buffer buffer (> (point-max) (point-min)))
-                ;; There's some output, display it
-                (progn
-                  (display-message-or-buffer buffer)
-                  (shell-command-set-point-after-cmd buffer))
-              ;; No output; error?
-              (let ((output
-                     (if (and error-file
-                              (< 0 (file-attribute-size
-				                            (file-attributes error-file))))
-                         (format "some error output%s"
-                                 (if shell-command-default-error-buffer
-                                     (format " to the \"%s\" buffer"
-                                             shell-command-default-error-buffer)
-                                   ""))
-                       "no output")))
-                (cond ((null exit-status)
-                       (message "(Shell command failed with error)"))
-                      ((equal 0 exit-status)
-                       (message "(Shell command succeeded with %s)"
-                                output))
-                      ((stringp exit-status)
-                       (message "(Shell command killed by signal %s)"
-                                exit-status))
-                      (t
-                       (message "(Shell command failed with code %d and %s)"
-                                exit-status output))))
-              ;; Don't kill: there might be useful info in the undo-log.
-              ;; (kill-buffer buffer)
-              )))))
+        (shelldon--command-output-to-buffer start end command
+                                            output-buffer replace
+                                            error-file)))
 
     (when (and error-file (file-exists-p error-file))
       (if (< 0 (file-attribute-size (file-attributes error-file)))
@@ -535,7 +545,7 @@ impose the use of a shell (with its need to quote arguments)."
 				                          'shelldon-command)))
     (add-to-list 'shelldon--hist `(,(concat (number-to-string (length shelldon--hist)) ":" command) . ,hidden-output-buffer))
     (if handler
-	      (funcall handler 'shelldon-command command output-buffer error-buffer)
+        (funcall handler 'shelldon-command command output-buffer error-buffer)
       (if (shelldon--output-current-buffer-p output-buffer)
           (shelldon--output-current-buffer command output-buffer error-buffer)
 	      (shelldon-command-on-region (point) (point) command
@@ -644,8 +654,8 @@ Also send output to OUTPUT-BUFFER and ERROR-BUFFER."
     current-prefix-arg
     shell-command-default-error-buffer))
   (shelldon-command command
-                    (if output-buffer output-buffer nil)
-                    (if error-buffer error-buffer nil))
+                    output-buffer
+                    error-buffer)
   (kill-new (with-current-buffer (string-trim (cdr (car shelldon--hist)))
               (buffer-string ))))
 
