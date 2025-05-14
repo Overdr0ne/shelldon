@@ -235,6 +235,7 @@ Optionally use OUTPUT-BUFFER and REPLACE the region."
   (let ((input (concat (funcall region-extract-function
                                 (when replace 'delete))
                        "\n"))
+        (shell-command-switch "-c") ;; synchronous commands can’t be run interactively
         output)
     ;; Process the extracted region
     (with-temp-buffer
@@ -267,6 +268,7 @@ Optionally use OUTPUT-BUFFER and REPLACE the region."
   "Replace region from START to END with COMMAND output.
 Uses REPLACE mode and ERROR-FILE for error handling."
   (let ((swap (and replace (< start end)))
+        (shell-command-switch "-c") ;; synchronous commands can’t be run interactively
         exit-status)
     ;; Don't modify mark unless REPLACE says we should
     (goto-char start)
@@ -294,6 +296,7 @@ Uses REPLACE mode and ERROR-FILE for error handling."
 Handles REPLACE mode and ERROR-FILE for error handling."
   (let ((buffer (get-buffer-create
                  (or output-buffer shell-command-buffer-name)))
+        (shell-command-switch "-c") ;; synchronous commands can’t be run interactively
         exit-status)
     ;; Enable modes that should be global
     (set-buffer-major-mode buffer)
