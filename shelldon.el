@@ -33,6 +33,7 @@
 (require 'cl-lib)
 (require 'shell)
 (require 'dired)
+(require 'notifications)
 
 ;;; ============================================================================
 ;;; Core Configuration
@@ -53,6 +54,10 @@
 
 (defcustom shelldon-ansi-colors nil
   "Toggle ANSI color output on shelldon's output."
+  :type 'toggle)
+
+(defcustom shelldon-desktop-notify-p t
+  "Set to t to use desktop notifications to notify when async commands complete."
   :type 'toggle)
 
 (defcustom shelldon-command-auto-load-history-p t
@@ -211,18 +216,19 @@ With OUTPUT-TO-CURRENT-BUFFER, handle current buffer case."
 Shows notification and updates mode line."
   (when (memq (process-status process) '(exit signal))
     (shelldon-command-set-point-to-bob (process-buffer process))
-    (let ((status-string (format "%s: %s."
-                                 (car (cdr (cdr (process-command process))))
-                                 (substring signal 0 -1)))
-          (bname (buffer-name (process-buffer process))))
-      ;; Create desktop notification
-      (notifications-notify
-       :title status-string
-       :body "Open the output buffer?"
-       :actions `(,bname "Jump to output")
-       :on-action 'shelldon-on-action-function
-       :on-close 'shelldon-on-close-function)
-      (message status-string))))
+    (when shelldon-desktop-notify-p
+      (let ((status-string (format "%s: %s."
+                                   (car (cdr (cdr (process-command process))))
+                                   (substring signal 0 -1)))
+            (bname (buffer-name (process-buffer process))))
+        ;; Create desktop notification
+        (notifications-notify
+         :title status-string
+         :body "Open the output buffer?"
+         :actions `(,bname "Jump to output")
+         :on-action 'shelldon-on-action-function
+         :on-close 'shelldon-on-close-function)
+        (message status-string)))))
 
 ;;; ============================================================================
 ;;; Region Handling Functions
