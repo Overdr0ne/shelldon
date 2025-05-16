@@ -524,8 +524,7 @@ ERROR-BUFFER specifies where to send error output."
          ;; interactively
          (handler
           (find-file-name-handler (directory-file-name default-directory)
-                                  'shell-command))
-         )
+                                  'shell-command)))
 
     (if handler
         ;; Use the appropriate handler for remote files
@@ -664,8 +663,7 @@ Also sends output to OUTPUT-BUFFER and errors to ERROR-BUFFER."
   ;; (kill-new (with-current-buffer (string-trim (cdr (car shelldon--hist)))
   ;;             (buffer-string)))
   (kill-new (with-current-buffer (cdr (car shelldon--hist))
-              (buffer-string)))
-  )
+              (buffer-string))))
 
 ;;;###autoload
 (defun shelldon-async ()
