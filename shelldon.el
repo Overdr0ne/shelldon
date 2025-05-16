@@ -496,6 +496,16 @@ REGION-NONCONTIGUOUS-P indicates a non-contiguous region."
 
     exit-status))
 
+(defun shelldon--tramp-file-name-for-operation (orig-fun &rest args)
+  (let ((operation (nth 0 args)))
+    (if (equal operation 'shelldon-command)
+        default-directory
+      (let ((res (apply orig-fun args)))
+        res))))
+(advice-add 'tramp-file-name-for-operation :around #'shelldon--tramp-file-name-for-operation)
+(setopt tramp-sh-file-name-handler-alist
+        (append tramp-sh-file-name-handler-alist
+                '((shelldon-command . tramp-handle-shell-command))))
 (defun shelldon-command (command &optional output-buffer error-buffer)
   "Execute string COMMAND in inferior shell; display output, if any.
 OUTPUT-BUFFER specifies where to send command output.
@@ -508,8 +518,8 @@ ERROR-BUFFER specifies where to send error output."
          ;; interactively
          (handler
           (find-file-name-handler (directory-file-name default-directory)
-                                  'shelldon-command)))
-
+                                  'shell-command))
+         )
 
     (if handler
         ;; Use the appropriate handler for remote files
@@ -524,8 +534,8 @@ ERROR-BUFFER specifies where to send error output."
 
     (with-current-buffer output-buffer (rename-buffer hidden-output-buffer))
     ;; Track this command in history
-    (shelldon--track-buffer command hidden-output-buffer)
-    ))
+    (shelldon--track-buffer command hidden-output-buffer)))
+;; (advice-add 'shell-command :override #'shelldon-command)
 
 (defun shelldon-async-command (command)
   "Execute string COMMAND in inferior shell asynchronously.
@@ -539,7 +549,7 @@ Displays output in a separate buffer with process monitoring."
          (error-buffer shell-command-default-error-buffer)
          (handler
           (find-file-name-handler (directory-file-name default-directory)
-                                  'shelldon-async-command)))
+                                  'async-shell-command)))
 
     ;; Track this command in history
     (shelldon--track-buffer command hidden-output-buffer)
