@@ -48,7 +48,7 @@
   "A string prepending the shelldon prompt, much like the PS1 EV in BASH."
   :type 'editable-field)
 
-(defcustom shelldon-autohistory-p nil
+(defcustom shelldon-autohistory-p t
   "Set to t to automatically complete history for shelldon commands."
   :type 'toggle)
 
