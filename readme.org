@@ -21,16 +21,20 @@ I just use straight+use-package like so:
                           :files ("shelldon.el"))
         ; below is the configuration I use, take what you want...
         ; tell bash this shell is interactive
-        (setf shell-command-switch "-ic")
+        (setopt shell-command-switch "-ic")
         ; recursive minibuffers for nested autocompletion from minibuffer commands,
         ; to e.g. interactively select from the kill-ring
-        (setf enable-recursive-minibuffers t)
+        (setopt enable-recursive-minibuffers t)
         ; comint output may contain SGR control sequences that may be translated into
         ; text properties if emacs has something equivalent. This requires special
         ; processing.
         (add-hook 'shelldon-mode-hook 'ansi-color-for-comint-mode-on)
         (add-to-list 'comint-output-filter-functions 'ansi-color-process-output)
         (autoload 'ansi-color-for-comint-mode-on "ansi-color" nil t)
+        ; optionally disable shelldon to automatically complete your history 
+        ; (setopt shelldon-autohistory-p nil)
+        ; optionally disable desktop notifications
+        ; (setopt shelldon-desktop-notify-p t)
         ; Tell Emacs how to display shelldon’s output buffers
         (add-to-list 'display-buffer-alist
                      '("*shelldon:"
@@ -41,34 +45,39 @@ I just use straight+use-package like so:
   )
 #+end_src
 * Usage
-In a standard terminal, all command inputs and outputs are tangled together in one buffer. In Shelldon, each command is entered into the minibuffer individually with the *shelldon* command, much like an internal M-x command, and output is sent to a buffer derived from each command name. Here are the core commands.
+In a standard terminal, all command inputs and outputs are tangled together in one buffer. In Shelldon, each command is entered into the minibuffer individually with the `shelldon` command, much like an internal M-x command, and output is sent to a buffer derived from each command name. Here are the core commands.
 
-| command              | description                           |
-|----------------------+---------------------------------------|
-| shelldon             | enter shell command in the minibuffer |
-| shelldon-loop        | enter a sequence of shell commands    |
-| shelldon-output-hist | go too shelldon output buffer         |
+| command                                                        | description                                        |
+| ----------------------+--------------------------------------- |                                                    |
+| shelldon                                                       | enter shell command in the minibuffer              |
+| shelldon-async-command                                         | enter asynchronous shell command in the minibuffer |
+| shelldon-loop                                                  | enter a sequence of shell commands                 |
+| shelldon-output-hist                                           | go too shelldon output buffer                      |
 
 Since Shelldon is largely just an enhancement of built-in shell interaction facilities, much of this is already documented within Emacs, but I've tried to present a unified workflow here.
 
 ** minibuffer
-- You may of course search the minibuffer history for *shelldon* commands, as with any comint command, with *comint-history-isearch-backward* (M-r) and the like.
+- By default, shelldon automatically completes your from your shell history. You may disable this feature by setting `shelldon-autohistory-p` to nil.
 
-- If you’d like to then use shelldon like an actual REPL, well, we’re just missing the loop part, so I’ve also provided a *shelldon-loop* command.
+- In any case, you may of course search the minibuffer history for *shelldon* commands, as with any comint command, with `comint-history-isearch-backward` (M-r) and the like.
 
-- Customize the prompt by modifying the *shelldon-prompt-str* variable. You may also toggle the display of the current working directory with the shell-command-prompt-show-cwd, just like other shell commands.
+- It is often useful to run a shell command and then paste the output later. The `shell-command-kill-output` will also copy the output of the shell command to the `kill-ring`.
 
-- By popular demand, you may also change the workdir without leaving shelldon-loop with the *shelldon-cd* command, bound to "C-x C-f" in *shelldon-minibuffer-local-command-map* by default. This requires:
+- If you’d like to then use shelldon like an actual REPL, well, we’re just missing the loop part, so I’ve also provided a `shelldon-loop` command.
+
+- Customize the prompt by modifying the `shelldon-prompt-str` variable. You may also toggle the display of the current working directory with the shell-command-prompt-show-cwd, just like other shell commands.
+
+- By popular demand, you may also change the workdir without leaving shelldon-loop with the `shelldon-cd` command, bound to "C-x C-f" in `shelldon-minibuffer-local-command-map` by default. This requires:
   #+begin_src elisp
   (setf enable-recursive-minibuffers t)
   #+end_src
   Personally, I just use dired when I want to navigate.
-- You may of course add any other local minibuffer keybindings you like to *shelldon-minibuffer-local-command-map*.
+- You may of course add any other local minibuffer keybindings you like to `shelldon-minibuffer-local-command-map`.
 
 ** shelldon-mode
 This is analogous to, and derived from Shell-mode -- basically the mode for displaying shelldon output.
 
-- To search the output history, use the *shelldon-output-hist* command, and select the command whose output you’d like to open.
+- To search the output history, use the `shelldon-output-hist` command, and select the command whose output you’d like to open.
 
 - Output buffer names begin with "*shelldon" such that you may configure display-buffer-alist to change how output windows are displayed. I’m a big fan of side windows, so I have configured things to display output buffers in the right side window by default. You can change this of course, by simply modifying the display-buffer-alist. For example, you could display the output buffer in the bottom side window like so:
 
@@ -82,7 +91,7 @@ This is analogous to, and derived from Shell-mode -- basically the mode for disp
 
   The buffer names also contain the executed command, so that may be used as well to configure windows on a per-command basis.
 
-- You may need to emulate terminal keypresses in some situations, like for interactive menus. I use the *term-send-* set of functions for this purpose. So I map <up> to *term-send-up* and <down> to *term-send-down*.
+- You may need to emulate terminal keypresses in some situations, like for interactive menus. I use the *term-send-* set of functions for this purpose. So I map <up> to `term-send-up` and <down> to `term-send-down`.
 
 ** sh-mode (shell script mode)
 - You may also send commands to Shelldon from a bash script buffer with the *shelldon-send-region* and *shelldon-send-current-line* commands. This is actually my preferred way of using shelldon- it is particularly useful when writing full-fledged shell scripts, allowing you to test as you go. Have a look:
